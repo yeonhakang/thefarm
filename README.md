@@ -203,9 +203,8 @@ const calculateGDD = (minTemp, maxTemp, baseTemp = 10) => {
 
 ## 📞 연락처
 
-- **이메일**: contact@living-seasons.kr
-- **GitHub**: https://github.com/your-username/living-seasons-app
-- **Issues**: https://github.com/your-username/living-seasons-app/issues
+- **이메일**: duagk5918@naver.com
+
 
 ---
 
