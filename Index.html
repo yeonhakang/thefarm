@@ -1,1 +1,451 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌾 농번기 - 생활절기 농업앱</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+            background: linear-gradient(135deg, #4CAF50, #81C784);
+            min-height: 100vh;
+            padding: 0;
+        }
+        .app {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header { 
+            background: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .title { 
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .subtitle { 
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .container { 
+            padding: 20px;
+        }
+        .greeting {
+            background: #F8F9FA;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+        .greeting-text {
+            font-size: 18px;
+            color: #2E7D32;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .greeting-sub {
+            font-size: 14px;
+            color: #666;
+        }
+        .card { 
+            background: #FFFFFF;
+            border: 1px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .card-title { 
+            font-size: 18px;
+            color: #2E7D32;
+            margin-bottom: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .season-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .season-name {
+            font-size: 24px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .season-date {
+            font-size: 14px;
+            color: #666;
+        }
+        .badge {
+            background: #E8F5E9;
+            color: #4CAF50;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 8px;
+        }
+        .countdown {
+            text-align: center;
+        }
+        .countdown-number {
+            font-size: 28px;
+            color: #FF9800;
+            font-weight: bold;
+            display: block;
+        }
+        .countdown-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .weather-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .temperature {
+            font-size: 32px;
+            color: #FF5722;
+            font-weight: bold;
+        }
+        .humidity {
+            font-size: 16px;
+            color: #2196F3;
+        }
+        .risk-badge {
+            background: #FFF3E0;
+            color: #FF9800;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .recommendation {
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+        }
+        .task-item {
+            background: #F8F9FA;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 4px solid #4CAF50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .task-item:hover {
+            background: #E8F5E9;
+        }
+        .task-item.urgent {
+            border-left-color: #F44336;
+            background: #FFEBEE;
+        }
+        .task-item.urgent:hover {
+            background: #FFCDD2;
+        }
+        .task-title {
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+        }
+        .task-status {
+            font-size: 12px;
+            color: #666;
+        }
+        .smart-farm {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .sensor {
+            text-align: center;
+        }
+        .sensor-value {
+            font-size: 20px;
+            color: #4CAF50;
+            font-weight: bold;
+            display: block;
+        }
+        .sensor-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .status-good {
+            background: #E8F5E9;
+            color: #4CAF50;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .action-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
+        }
+        .action-btn:hover {
+            background: #45A049;
+        }
+        .action-btn:active {
+            transform: translateY(1px);
+        }
+        .tab-bar {
+            background: #FFFFFF;
+            border-top: 1px solid #E0E0E0;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            padding: 8px 0;
+            position: sticky;
+            bottom: 0;
+        }
+        .tab {
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 12px;
+            color: #666;
+        }
+        .tab:hover, .tab.active {
+            background: #E8F5E9;
+            color: #4CAF50;
+            border-radius: 8px;
+            margin: 0 4px;
+        }
+        .tab-icon {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 2px;
+        }
+        
+        /* 반응형 */
+        @media (max-width: 480px) {
+            .app {
+                max-width: 100%;
+            }
+            .container {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="title">🌾 농번기</div>
+            <div class="subtitle">스마트 농업 관리 시스템</div>
+        </div>
 
+        <!-- 메인 콘텐츠 -->
+        <div class="container">
+            <!-- 인사말 -->
+            <div class="greeting">
+                <div class="greeting-text">안녕하세요, 김농부님! 👋</div>
+                <div class="greeting-sub">오늘도 좋은 농사일 되세요</div>
+            </div>
+
+            <!-- 현재 절기 -->
+            <div class="card">
+                <div class="card-title">📅 현재 절기</div>
+                <div class="season-info">
+                    <div>
+                        <div class="season-name">처서</div>
+                        <div class="season-date">8월 23일</div>
+                        <div class="badge">생활절기: 생활처서 (+3일)</div>
+                    </div>
+                    <div class="countdown">
+                        <span class="countdown-number">15</span>
+                        <span class="countdown-label">일 후 백로</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 날씨 정보 -->
+            <div class="card">
+                <div class="card-title">🌡️ 오늘의 날씨</div>
+                <div class="weather-info">
+                    <span class="temperature">28°C</span>
+                    <span class="humidity">습도 72%</span>
+                </div>
+                <div class="risk-badge">⚠️ 위험도: 보통</div>
+                <div class="recommendation">오후 관수 작업을 권장합니다</div>
+            </div>
+
+            <!-- 오늘의 작업 -->
+            <div class="card">
+                <div class="card-title">✅ 오늘의 추천 작업</div>
+                <div class="task-item urgent" onclick="showTaskDetail('배추 정식 준비')">
+                    <div>
+                        <div class="task-title">배추 정식 준비</div>
+                        <div class="task-status">D-2 (긴급)</div>
+                    </div>
+                    <span>→</span>
+                </div>
+                <div class="task-item" onclick="showTaskDetail('벼 출수기 관찰')">
+                    <div>
+                        <div class="task-title">벼 출수기 관찰</div>
+                        <div class="task-status">진행중</div>
+                    </div>
+                    <span>→</span>
+                </div>
+                <div class="task-item" onclick="showTaskDetail('스마트팜 센서 점검')">
+                    <div>
+                        <div class="task-title">스마트팜 센서 점검</div>
+                        <div class="task-status">예정</div>
+                    </div>
+                    <span>→</span>
+                </div>
+            </div>
+
+            <!-- 스마트팜 현황 -->
+            <div class="card">
+                <div class="card-title">📊 스마트팜 현황</div>
+                <div class="smart-farm">
+                    <div class="sensor">
+                        <span class="sensor-value">24.5°C</span>
+                        <span class="sensor-label">토양온도</span>
+                    </div>
+                    <div class="sensor">
+                        <span class="sensor-value">68%</span>
+                        <span class="sensor-label">토양습도</span>
+                    </div>
+                </div>
+                <div class="status-good">✅ 모든 시설 정상 가동중</div>
+            </div>
+
+            <!-- 빠른 액션 -->
+            <div class="action-buttons">
+                <button class="action-btn" onclick="goToFarm()">🗺️ 농장 관리</button>
+                <button class="action-btn" onclick="goToCommunity()">👥 커뮤니티</button>
+            </div>
+        </div>
+
+        <!-- 하단 탭 -->
+        <div class="tab-bar">
+            <div class="tab active" onclick="showTab('home')">
+                <span class="tab-icon">🏠</span>
+                홈
+            </div>
+            <div class="tab" onclick="showTab('calendar')">
+                <span class="tab-icon">📅</span>
+                달력
+            </div>
+            <div class="tab" onclick="showTab('farm')">
+                <span class="tab-icon">🗺️</span>
+                농장
+            </div>
+            <div class="tab" onclick="showTab('community')">
+                <span class="tab-icon">👥</span>
+                커뮤니티
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 작업 상세 보기
+        function showTaskDetail(taskName) {
+            alert(`📋 ${taskName}\n\n상세 정보:\n- 현재 상태를 확인해보세요\n- 적절한 시기에 진행하세요\n- 날씨 조건을 고려하세요`);
+        }
+
+        // 농장 관리로 이동
+        function goToFarm() {
+            alert('🗺️ 농장 관리 페이지\n\n- 농장 위치 확인\n- 작물 현황 점검\n- GDD 진행률 모니터링');
+        }
+
+        // 커뮤니티로 이동
+        function goToCommunity() {
+            alert('👥 지역 농민 커뮤니티\n\n- 이웃 농부들과 정보 공유\n- 병해충 발생 현황\n- 농업 팁 교환');
+        }
+
+        // 탭 전환
+        function showTab(tabName) {
+            // 모든 탭에서 active 클래스 제거
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 클릭된 탭에 active 클래스 추가
+            event.currentTarget.classList.add('active');
+            
+            // 탭별 알림 (실제로는 페이지 전환)
+            const messages = {
+                'home': '🏠 홈 화면입니다',
+                'calendar': '📅 절기 달력 - 전통절기와 생활절기를 비교해보세요',
+                'farm': '🗺️ 농장 관리 - 작물과 농장을 관리하세요',
+                'community': '👥 커뮤니티 - 지역 농민들과 소통하세요'
+            };
+            
+            if (tabName !== 'home') {
+                alert(messages[tabName]);
+            }
+        }
+
+        // 현재 시간 업데이트
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('ko-KR');
+            document.title = `🌾 농번기 - ${timeString}`;
+        }
+        
+        // 1분마다 시간 업데이트
+        setInterval(updateTime, 60000);
+        updateTime();
+
+        // PWA 지원 (홈 화면 추가)
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            deferredPrompt = e;
+            console.log('앱을 홈 화면에 추가할 수 있습니다');
+        });
+
+        // 페이지 로드 완료 시
+        window.addEventListener('load', () => {
+            console.log('🌾 농번기 앱이 로드되었습니다!');
+            
+            // 간단한 환영 메시지
+            setTimeout(() => {
+                if (confirm('🌾 농번기에 오신 것을 환영합니다!\n\n이 앱을 홈 화면에 추가하시겠습니까?')) {
+                    alert('📱 브라우저 메뉴에서 "홈 화면에 추가"를 선택하세요!');
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
