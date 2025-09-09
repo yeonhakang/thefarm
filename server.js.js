@@ -1,0 +1,583 @@
+// server.js - 생활절기 농업앱 백엔드 서버
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
+const { Pool } = require('pg');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const axios = require('axios');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// 데이터베이스 연결
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/living_seasons',
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
+// 미들웨어 설정
+app.use(helmet());
+app.use(cors());
+app.use(morgan('combined'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15분
+  max: 100 // 최대 100개 요청
+});
+app.use('/api/', limiter);
+
+// JWT 인증 미들웨어
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: '액세스 토큰이 필요합니다' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET || 'default_secret', (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: '유효하지 않은 토큰입니다' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// ===================
+// 1. 사용자 인증 API
+// ===================
+
+// 회원가입
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { email, password, name, phone, region } = req.body;
+    
+    // 이메일 중복 확인
+    const existingUser = await pool.query(
+      'SELECT user_id FROM users WHERE email = $1',
+      [email]
+    );
+    
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: '이미 존재하는 이메일입니다' });
+    }
+    
+    // 비밀번호 해시화
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // 사용자 생성
+    const newUser = await pool.query(
+      `INSERT INTO users (email, password_hash, name, phone, region, created_at)
+       VALUES ($1, $2, $3, $4, $5, NOW())
+       RETURNING user_id, email, name, region`,
+      [email, hashedPassword, name, phone, region]
+    );
+    
+    // JWT 토큰 생성
+    const token = jwt.sign(
+      { userId: newUser.rows[0].user_id, email: newUser.rows[0].email },
+      process.env.JWT_SECRET || 'default_secret',
+      { expiresIn: '24h' }
+    );
+    
+    res.status(201).json({
+      message: '회원가입이 완료되었습니다',
+      user: newUser.rows[0],
+      token
+    });
+    
+  } catch (error) {
+    console.error('회원가입 오류:', error);
+    res.status(500).json({ error: '서버 오류가 발생했습니다' });
+  }
+});
+
+// 로그인
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // 사용자 확인
+    const user = await pool.query(
+      'SELECT user_id, email, password_hash, name, region FROM users WHERE email = $1',
+      [email]
+    );
+    
+    if (user.rows.length === 0) {
+      return res.status(401).json({ error: '이메일 또는 비밀번호가 잘못되었습니다' });
+    }
+    
+    // 비밀번호 확인
+    const validPassword = await bcrypt.compare(password, user.rows[0].password_hash);
+    
+    if (!validPassword) {
+      return res.status(401).json({ error: '이메일 또는 비밀번호가 잘못되었습니다' });
+    }
+    
+    // JWT 토큰 생성
+    const token = jwt.sign(
+      { userId: user.rows[0].user_id, email: user.rows[0].email },
+      process.env.JWT_SECRET || 'default_secret',
+      { expiresIn: '24h' }
+    );
+    
+    res.json({
+      message: '로그인 성공',
+      user: {
+        user_id: user.rows[0].user_id,
+        email: user.rows[0].email,
+        name: user.rows[0].name,
+        region: user.rows[0].region
+      },
+      token
+    });
+    
+  } catch (error) {
+    console.error('로그인 오류:', error);
+    res.status(500).json({ error: '서버 오류가 발생했습니다' });
+  }
+});
+
+// ===================
+// 2. 생활절기 API
+// ===================
+
+// 현재 절기 정보 조회
+app.get('/api/seasons/current', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const today = new Date();
+    
+    // 사용자 지역 정보 가져오기
+    const userInfo = await pool.query(
+      'SELECT region FROM users WHERE user_id = $1',
+      [userId]
+    );
+    
+    if (userInfo.rows.length === 0) {
+      return res.status(404).json({ error: '사용자를 찾을 수 없습니다' });
+    }
+    
+    const region = userInfo.rows[0].region;
+    
+    // 현재 절기 계산
+    const currentSeason = calculateCurrentSeason(today);
+    const livingSeason = await calculateLivingSeason(region, today);
+    
+    res.json({
+      traditional_season: currentSeason,
+      living_season: livingSeason,
+      region: region,
+      date: today.toISOString().split('T')[0]
+    });
+    
+  } catch (error) {
+    console.error('현재 절기 조회 오류:', error);
+    res.status(500).json({ error: '서버 오류가 발생했습니다' });
+  }
+});
+
+// ===================
+// 3. 기상 데이터 API
+// ===================
+
+// 현재 날씨 조회
+app.get('/api/weather/current', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    
+    // 사용자 위치 정보 가져오기
+    const userLocation = await pool.query(
+      `SELECT u.region, uf.latitude, uf.longitude 
+       FROM users u 
+       LEFT JOIN user_fields uf ON u.user_id = uf.user_id 
+       WHERE u.user_id = $1 
+       LIMIT 1`,
+      [userId]
+    );
+    
+    if (userLocation.rows.length === 0) {
+      return res.status(404).json({ error: '사용자 위치 정보를 찾을 수 없습니다' });
+    }
+    
+    const { region, latitude, longitude } = userLocation.rows[0];
+    
+    // 기상청 API 호출 (테스트용 더미 데이터)
+    const weatherData = {
+      temperature: 22,
+      humidity: 65,
+      wind_speed: 2.1,
+      precipitation: 0,
+      pressure: 1013.2,
+      uv_index: 6,
+      recorded_at: new Date().toISOString()
+    };
+    
+    // 농업용 위험도 계산
+    const riskAssessment = calculateWeatherRisk(weatherData);
+    
+    res.json({
+      location: { region, latitude, longitude },
+      current_weather: weatherData,
+      risk_assessment: riskAssessment,
+      recommendations: generateWeatherRecommendations(weatherData, riskAssessment)
+    });
+    
+  } catch (error) {
+    console.error('날씨 조회 오류:', error);
+    res.status(500).json({ error: '날씨 정보를 가져올 수 없습니다' });
+  }
+});
+
+// ===================
+// 4. 농장 관리 API
+// ===================
+
+// 사용자 농장 목록 조회
+app.get('/api/farms', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    
+    const farms = await pool.query(
+      `SELECT field_id, field_name, crop_type, area_size, area_unit,
+              latitude, longitude, created_at
+       FROM user_fields 
+       WHERE user_id = $1 
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+    
+    res.json({
+      farms: farms.rows,
+      total_count: farms.rows.length
+    });
+    
+  } catch (error) {
+    console.error('농장 목록 조회 오류:', error);
+    res.status(500).json({ error: '농장 정보를 가져올 수 없습니다' });
+  }
+});
+
+// 새 농장 등록
+app.post('/api/farms', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { field_name, crop_type, area_size, area_unit, latitude, longitude } = req.body;
+    
+    const newFarm = await pool.query(
+      `INSERT INTO user_fields 
+       (user_id, field_name, crop_type, area_size, area_unit, latitude, longitude, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+       RETURNING *`,
+      [userId, field_name, crop_type, area_size, area_unit, latitude, longitude]
+    );
+    
+    res.status(201).json({
+      message: '농장이 등록되었습니다',
+      farm: newFarm.rows[0]
+    });
+    
+  } catch (error) {
+    console.error('농장 등록 오류:', error);
+    res.status(500).json({ error: '농장 등록에 실패했습니다' });
+  }
+});
+
+// ===================
+// 5. 커뮤니티 API
+// ===================
+
+// 지역 커뮤니티 게시글 목록
+app.get('/api/community/posts', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { page = 1, limit = 20, category } = req.query;
+    const offset = (page - 1) * limit;
+    
+    // 사용자 지역 정보
+    const userRegion = await pool.query(
+      'SELECT region FROM users WHERE user_id = $1',
+      [userId]
+    );
+    
+    const region = userRegion.rows[0].region;
+    
+    // 지역 기반 게시글 조회
+    let query = `
+      SELECT cp.post_id, cp.title, cp.content, cp.category, cp.created_at,
+             u.name as author_name, u.region as author_region
+      FROM community_posts cp
+      JOIN users u ON cp.user_id = u.user_id
+      WHERE u.region = $1`;
+    
+    const queryParams = [region];
+    
+    if (category) {
+      query += ` AND cp.category = $${queryParams.length + 1}`;
+      queryParams.push(category);
+    }
+    
+    query += ` ORDER BY cp.created_at DESC
+               LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
+    
+    queryParams.push(limit, offset);
+    
+    const posts = await pool.query(query, queryParams);
+    
+    res.json({
+      posts: posts.rows,
+      pagination: {
+        current_page: parseInt(page),
+        total_pages: Math.ceil(posts.rows.length / limit),
+        region: region
+      }
+    });
+    
+  } catch (error) {
+    console.error('커뮤니티 게시글 조회 오류:', error);
+    res.status(500).json({ error: '게시글을 가져올 수 없습니다' });
+  }
+});
+
+// 새 게시글 작성
+app.post('/api/community/posts', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { title, content, category } = req.body;
+    
+    const newPost = await pool.query(
+      `INSERT INTO community_posts (user_id, title, content, category, created_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       RETURNING post_id, title, content, category, created_at`,
+      [userId, title, content, category]
+    );
+    
+    res.status(201).json({
+      message: '게시글이 작성되었습니다',
+      post: newPost.rows[0]
+    });
+    
+  } catch (error) {
+    console.error('게시글 작성 오류:', error);
+    res.status(500).json({ error: '게시글 작성에 실패했습니다' });
+  }
+});
+
+// ===================
+// 유틸리티 함수들
+// ===================
+
+// 현재 절기 계산
+function calculateCurrentSeason(date) {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  
+  // 24절기 대략적인 날짜
+  const seasons = [
+    { name: '소한', month: 1, day: 5 },
+    { name: '대한', month: 1, day: 20 },
+    { name: '입춘', month: 2, day: 4 },
+    { name: '우수', month: 2, day: 19 },
+    { name: '경칩', month: 3, day: 5 },
+    { name: '춘분', month: 3, day: 20 },
+    { name: '청명', month: 4, day: 5 },
+    { name: '곡우', month: 4, day: 20 },
+    { name: '입하', month: 5, day: 5 },
+    { name: '소만', month: 5, day: 21 },
+    { name: '망종', month: 6, day: 5 },
+    { name: '하지', month: 6, day: 21 },
+    { name: '소서', month: 7, day: 7 },
+    { name: '대서', month: 7, day: 23 },
+    { name: '입추', month: 8, day: 7 },
+    { name: '처서', month: 8, day: 23 },
+    { name: '백로', month: 9, day: 7 },
+    { name: '추분', month: 9, day: 23 },
+    { name: '한로', month: 10, day: 8 },
+    { name: '상강', month: 10, day: 23 },
+    { name: '입동', month: 11, day: 7 },
+    { name: '소설', month: 11, day: 22 },
+    { name: '대설', month: 12, day: 7 },
+    { name: '동지', month: 12, day: 22 }
+  ];
+  
+  // 현재 날짜에 가장 가까운 이전 절기 찾기
+  let currentSeason = seasons[0];
+  for (let i = 0; i < seasons.length; i++) {
+    const season = seasons[i];
+    if (month < season.month || (month === season.month && day < season.day)) {
+      break;
+    }
+    currentSeason = season;
+  }
+  
+  return currentSeason;
+}
+
+// 생활절기 계산
+async function calculateLivingSeason(region, date) {
+  try {
+    // 지역별 기온 보정값 조회
+    const regionCorrection = await pool.query(
+      'SELECT temperature_offset FROM region_corrections WHERE region = $1',
+      [region]
+    );
+    
+    const tempOffset = regionCorrection.rows[0]?.temperature_offset || 0;
+    
+    // 기본 절기에서 보정값만큼 조정
+    const traditionalSeason = calculateCurrentSeason(date);
+    
+    // 온도가 높으면 절기가 빨라짐
+    const adjustmentDays = Math.round(tempOffset * 2);
+    
+    return {
+      ...traditionalSeason,
+      adjustment_days: adjustmentDays,
+      adjusted_name: adjustmentDays !== 0 ? `${traditionalSeason.name} (${adjustmentDays > 0 ? '+' : ''}${adjustmentDays}일)` : traditionalSeason.name
+    };
+    
+  } catch (error) {
+    console.error('생활절기 계산 오류:', error);
+    return calculateCurrentSeason(date);
+  }
+}
+
+// 날씨 위험도 계산
+function calculateWeatherRisk(weatherData) {
+  let riskLevel = 'low';
+  let riskFactors = [];
+  
+  // 온도 위험도
+  if (weatherData.temperature > 35) {
+    riskLevel = 'high';
+    riskFactors.push('극한 고온');
+  } else if (weatherData.temperature > 30) {
+    riskLevel = 'medium';
+    riskFactors.push('고온');
+  }
+  
+  // 습도 위험도
+  if (weatherData.humidity > 80) {
+    if (riskLevel === 'low') riskLevel = 'medium';
+    riskFactors.push('높은 습도');
+  }
+  
+  // 강수량 위험도
+  if (weatherData.precipitation > 50) {
+    riskLevel = 'high';
+    riskFactors.push('폭우');
+  } else if (weatherData.precipitation > 10) {
+    if (riskLevel === 'low') riskLevel = 'medium';
+    riskFactors.push('강우');
+  }
+  
+  return {
+    risk_level: riskLevel,
+    risk_factors: riskFactors,
+    risk_score: riskLevel === 'high' ? 9 : riskLevel === 'medium' ? 5 : 1
+  };
+}
+
+// 기상 추천사항 생성
+function generateWeatherRecommendations(weatherData, riskAssessment) {
+  const recommendations = [];
+  
+  if (riskAssessment.risk_level === 'high') {
+    recommendations.push('🚨 긴급: 농작업 중단 권고');
+    
+    if (riskAssessment.risk_factors.includes('극한 고온')) {
+      recommendations.push('🌡️ 차광망 설치 및 관수 시스템 가동');
+    }
+    
+    if (riskAssessment.risk_factors.includes('폭우')) {
+      recommendations.push('🌧️ 배수 시설 점검 및 토양 침수 방지');
+    }
+  }
+  
+  if (riskAssessment.risk_level === 'medium') {
+    recommendations.push('⚠️ 주의: 농작업 시 각별한 주의 필요');
+    
+    if (weatherData.temperature > 30) {
+      recommendations.push('🕐 오전 또는 저녁 시간대에 작업하세요');
+    }
+  }
+  
+  if (riskAssessment.risk_level === 'low') {
+    recommendations.push('✅ 농작업에 적합한 날씨입니다');
+    
+    if (weatherData.humidity < 60 && weatherData.precipitation === 0) {
+      recommendations.push('💧 관수 작업에 좋은 조건입니다');
+    }
+  }
+  
+  return recommendations;
+}
+
+// 헬스체크 엔드포인트
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: '🌾 생활절기 농업 API 서버가 정상 동작 중입니다',
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// 기본 경로
+app.get('/', (req, res) => {
+  res.json({
+    message: '🌾 생활절기 농업 API에 오신 것을 환영합니다!',
+    version: '1.0.0',
+    endpoints: [
+      'POST /api/auth/register - 회원가입',
+      'POST /api/auth/login - 로그인',
+      'GET /api/seasons/current - 현재 절기',
+      'GET /api/weather/current - 현재 날씨',
+      'GET /api/farms - 농장 목록',
+      'POST /api/farms - 농장 등록',
+      'GET /api/community/posts - 커뮤니티 게시글',
+      'POST /api/community/posts - 게시글 작성',
+      'GET /api/health - 서버 상태'
+    ]
+  });
+});
+
+// 에러 핸들러
+app.use((err, req, res, next) => {
+  console.error('서버 오류:', err);
+  res.status(500).json({ 
+    error: '내부 서버 오류가 발생했습니다',
+    message: process.env.NODE_ENV === 'development' ? err.message : '서버 오류'
+  });
+});
+
+// 404 핸들러
+app.use('*', (req, res) => {
+  res.status(404).json({ error: '요청한 리소스를 찾을 수 없습니다' });
+});
+
+// 서버 시작
+app.listen(PORT, () => {
+  console.log(`🌾 생활절기 농업 API 서버가 포트 ${PORT}에서 실행 중입니다`);
+  console.log(`📱 환경: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🗄️ 데이터베이스: ${process.env.DATABASE_URL ? '연결됨' : '기본 설정 사용'}`);
+  console.log(`🔗 API 문서: http://localhost:${PORT}`);
+});
+
+// 우아한 종료
+process.on('SIGTERM', () => {
+  console.log('서버가 종료됩니다...');
+  pool.end(() => {
+    console.log('데이터베이스 연결이 종료되었습니다');
+    process.exit(0);
+  });
+});
+
+module.exports = app;

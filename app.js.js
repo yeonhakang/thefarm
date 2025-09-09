@@ -1,0 +1,100 @@
+// App.js - 생활절기 농업앱 메인 앱 파일
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  StatusBar,
+  SafeAreaView,
+} from 'react-native';
+
+// 가상의 데이터 (실제로는 API에서 가져옴)
+const mockData = {
+  user: { name: '김농부', region: '경기도' },
+  currentSeason: {
+    traditional: { name: '처서', date: '8/23' },
+    living: { name: '생활처서', adjustment: '+3일' },
+    nextSeason: { name: '백로', daysLeft: 15 }
+  },
+  weather: {
+    temperature: 28,
+    humidity: 72,
+    risk: '보통',
+    recommendation: '오후 관수 권장'
+  },
+  todayTasks: [
+    { id: 1, title: '배추 정식 준비', status: 'D-2', priority: 'high' },
+    { id: 2, title: '벼 출수기 관찰', status: '진행중', priority: 'medium' },
+    { id: 3, title: '스마트팜 센서 점검', status: '예정', priority: 'low' }
+  ],
+  smartFarm: {
+    soilTemp: 24.5,
+    soilMoisture: 68,
+    status: '정상'
+  }
+};
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('home');
+  const [data, setData] = useState(mockData);
+
+  // 앱 시작시 데이터 로드
+  useEffect(() => {
+    loadAppData();
+  }, []);
+
+  const loadAppData = async () => {
+    try {
+      // 실제로는 API 호출
+      // const response = await fetch('/api/seasons/current');
+      // const data = await response.json();
+      console.log('앱 데이터 로드 완료');
+    } catch (error) {
+      console.error('데이터 로드 오류:', error);
+    }
+  };
+
+  const handleTaskPress = (task) => {
+    Alert.alert(
+      '작업 상세',
+      `${task.title}\n상태: ${task.status}`,
+      [
+        { text: '취소', style: 'cancel' },
+        { text: '완료 처리', onPress: () => completeTask(task.id) }
+      ]
+    );
+  };
+
+  const completeTask = (taskId) => {
+    Alert.alert('완료!', '작업이 완료로 처리되었습니다.');
+  };
+
+  // 홈 화면
+  const renderHomeScreen = () => (
+    <ScrollView style={styles.container}>
+      {/* 인사말 헤더 */}
+      <View style={styles.header}>
+        <Text style={styles.greeting}>안녕하세요, {data.user.name}님! 🌾</Text>
+        <Text style={styles.subGreeting}>오늘도 좋은 농사일 되세요</Text>
+      </View>
+
+      {/* 현재 절기 카드 */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>📅 현재 절기</Text>
+        <View style={styles.seasonInfo}>
+          <View style={styles.seasonLeft}>
+            <Text style={styles.seasonName}>{data.currentSeason.traditional.name}</Text>
+            <Text style={styles.seasonDate}>({data.currentSeason.traditional.date})</Text>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>
+                생활절기: {data.currentSeason.living.name} {data.currentSeason.living.adjustment}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.seasonRight}>
+            <Text style={styles.countdown}>{data.currentSeason.nextSeason.daysLeft}</Text>
+            <Text style={styles.countdownLabel}>일 후</Text>
+            <Text style={styles.nextS
