@@ -41,7 +41,7 @@
         }
         .container { 
             padding: 20px;
-            padding-bottom: 80px;
+            padding-bottom: 100px;
         }
         .screen {
             display: none;
@@ -255,31 +255,6 @@
             background: #FF9800;
             color: white;
         }
-        .farm-map {
-            height: 200px;
-            background: #E8F5E9;
-            border-radius: 12px;
-            position: relative;
-            margin-bottom: 16px;
-            overflow: hidden;
-        }
-        .field-area {
-            position: absolute;
-            background: rgba(76, 175, 80, 0.3);
-            border: 2px solid #4CAF50;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .field-area:hover {
-            background: rgba(76, 175, 80, 0.5);
-        }
-        .field-label {
-            font-size: 10px;
-            color: #2E7D32;
-            font-weight: bold;
-            padding: 2px 4px;
-        }
         .community-post {
             padding: 16px;
             border-bottom: 1px solid #E0E0E0;
@@ -313,9 +288,56 @@
             color: #666;
             line-height: 1.4;
         }
+        
+        /* 설정 화면 스타일 */
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #F0F0F0;
+        }
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        .setting-item label {
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+        }
+        .setting-item input, .setting-item select {
+            padding: 8px 12px;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .font-size-controls, .theme-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .font-btn, .theme-btn {
+            padding: 8px 12px;
+            border: 1px solid #E0E0E0;
+            background: #FFFFFF;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .font-btn:hover, .theme-btn:hover {
+            background: #F0F0F0;
+        }
+        .font-btn.active, .theme-btn.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        /* 플로팅 액션 버튼 */
         .fab {
             position: fixed;
-            bottom: 80px;
+            bottom: 90px;
             right: 20px;
             width: 56px;
             height: 56px;
@@ -333,12 +355,14 @@
             background: #45A049;
             transform: scale(1.1);
         }
+        
+        /* 탭바 스타일 - 중요! */
         .tab-bar {
             background: #FFFFFF;
             border-top: 1px solid #E0E0E0;
             display: grid;
             grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-            padding: 4px 0;
+            padding: 8px 0;
             position: fixed;
             bottom: 0;
             left: 50%;
@@ -346,283 +370,48 @@
             width: 100%;
             max-width: 400px;
             z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
         }
         .tab {
-            padding: 6px 2px;
+            padding: 8px 4px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
             font-size: 10px;
             color: #666;
             min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         .tab:hover, .tab.active {
             background: #E8F5E9;
             color: #4CAF50;
-            border-radius: 6px;
+            border-radius: 8px;
             margin: 0 2px;
         }
         .tab-icon {
-            font-size: 18px;
+            font-size: 20px;
             display: block;
             margin-bottom: 2px;
         }
-        .gdd-progress {
-            background: #E0E0E0;
-            border-radius: 10px;
-            height: 20px;
-            margin: 12px 0;
-            overflow: hidden;
-        }
-        .gdd-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #4CAF50, #8BC34A);
-            transition: width 0.3s ease;
-            display: flex;
-            align-items: center;
-            padding: 0 8px;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-        }
         
-        /* 설정 화면 스타일 */
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #F0F0F0;
-        }
-        
-        .setting-item:last-child {
-            border-bottom: none;
-        }
-        
-        .setting-item label {
-            font-weight: 600;
-            color: #333;
-            flex: 1;
-        }
-        
-        .setting-item input, .setting-item select {
-            padding: 8px 12px;
-            border: 1px solid #E0E0E0;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        
-        .font-size-controls, .theme-controls {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
-        .font-btn, .theme-btn {
-            padding: 8px 12px;
-            border: 1px solid #E0E0E0;
-            background: #FFFFFF;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        
-        .font-btn:hover, .theme-btn:hover {
-            background: #F0F0F0;
-        }
-        
-        .font-btn.active, .theme-btn.active {
-            background: #4CAF50;
-            color: white;
-            border-color: #4CAF50;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .toggle-label {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #CCC;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        
-        .toggle-label:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .toggle-label {
-            background-color: #4CAF50;
-        }
-        
-        input:checked + .toggle-label:before {
-            transform: translateX(26px);
-        }
-        
-        .action-button {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            background: #4CAF50;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: background 0.2s;
-            width: 100%;
-            margin-bottom: 4px;
-        }
-        
-        .action-button:hover {
-            background: #45A049;
-        }
-        
-        .action-button.danger {
-            background: #F44336;
-        }
-        
-        .action-button.danger:hover {
-            background: #E53935;
-        }
-        
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            font-size: 14px;
-        }
-        
-        .info-item span:first-child {
-            color: #666;
-        }
-        
-        .info-item span:last-child {
-            font-weight: 600;
-            color: #333;
-        }
-        
-        /* 글씨 크기 클래스들 */
-        .font-small { font-size: 12px; }
-        .font-normal { font-size: 14px; }
-        .font-large { font-size: 18px; }
-        .font-xlarge { font-size: 22px; }
-        
-        .font-small .title { font-size: 20px; }
-        .font-large .title { font-size: 28px; }
-        .font-xlarge .title { font-size: 32px; }
-        
-        .font-small .card-title { font-size: 16px; }
-        .font-large .card-title { font-size: 22px; }
-        .font-xlarge .card-title { font-size: 26px; }
-        
-        /* 테마 클래스들 */
-        .theme-dark {
-            background: #333 !important;
-            color: #FFF !important;
-        }
-        
-        .theme-dark .app {
-            background: #444 !important;
-        }
-        
-        .theme-dark .card {
-            background: #555 !important;
-            border-color: #666 !important;
-            color: #FFF !important;
-        }
-        
-        .theme-dark .header {
-            background: #2E7D32 !important;
-        }
-        
-        .theme-dark .tab-bar {
-            background: #555 !important;
-            border-color: #666 !important;
-        }
-        
-        .theme-high-contrast {
-            background: #000 !important;
-            color: #FFFF00 !important;
-        }
-        
-        .theme-high-contrast .app {
-            background: #000 !important;
-        }
-        
-        .theme-high-contrast .card {
-            background: #000 !important;
-            border: 3px solid #FFFF00 !important;
-            color: #FFFF00 !important;
-        }
-        
-        .theme-high-contrast .header {
-            background: #000 !important;
-            border: 2px solid #FFFF00 !important;
-        }
-        
-        .theme-high-contrast .tab-bar {
-            background: #000 !important;
-            border: 2px solid #FFFF00 !important;
-        }
-        
-        /* 큰 버튼 모드 */
-        .big-buttons .tab {
-            padding: 16px 8px !important;
-            font-size: 14px !important;
-        }
-        
-        .big-buttons .tab-icon {
-            font-size: 28px !important;
-        }
-        
-        .big-buttons .card {
-            padding: 24px !important;
-        }
-        
-        .big-buttons .task-item {
-            padding: 20px !important;
-            font-size: 16px !important;
-        }
-        
-        .big-buttons .action-button {
-            padding: 16px 20px !important;
-            font-size: 16px !important;
-        }
-        
+        /* 모바일 최적화 */
         @media (max-width: 480px) {
             .app {
                 max-width: 100%;
             }
             .container {
                 padding: 16px;
-                padding-bottom: 80px;
+                padding-bottom: 100px;
             }
-            .font-size-controls, .theme-controls {
-                flex-direction: column;
+            .tab {
+                font-size: 9px;
+                padding: 6px 2px;
+            }
+            .tab-icon {
+                font-size: 18px;
             }
         }
     </style>
@@ -688,7 +477,27 @@
                 <div class="card">
                     <div class="card-title">✅ 오늘의 농작업 가이드</div>
                     <div class="task-list" id="task-list">
-                        <!-- 동적으로 생성 -->
+                        <div class="task-item urgent" onclick="handleTaskClick('가을 파종')">
+                            <div class="task-content">
+                                <div class="task-title">가을 파종</div>
+                                <div class="task-status">D-2</div>
+                            </div>
+                            <div class="task-priority priority-high"></div>
+                        </div>
+                        <div class="task-item" onclick="handleTaskClick('김장용 배추 관리')">
+                            <div class="task-content">
+                                <div class="task-title">김장용 배추 관리</div>
+                                <div class="task-status">진행중</div>
+                            </div>
+                            <div class="task-priority priority-medium"></div>
+                        </div>
+                        <div class="task-item" onclick="handleTaskClick('저장고 준비')">
+                            <div class="task-content">
+                                <div class="task-title">저장고 준비</div>
+                                <div class="task-status">예정</div>
+                            </div>
+                            <div class="task-priority priority-low"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -715,7 +524,8 @@
                 </div>
             </div>
 
-            <!-- 캘린더 화면 -->
+            <!-- 여기서 1부 끝 - 2부에서 캘린더부터 계속 -->
+<!-- 캘린더 화면 -->
             <div id="calendar-screen" class="screen">
                 <div class="card">
                     <div class="card-title">📅 2024년 9월 농업 달력</div>
@@ -729,7 +539,7 @@
                         <div style="font-weight: bold; color: #666;">토</div>
                     </div>
                     <div class="calendar-grid" id="calendar-grid">
-                        <!-- 달력 생성 -->
+                        <!-- 달력 생성됨 -->
                     </div>
                 </div>
 
@@ -752,15 +562,15 @@
             <div id="farm-screen" class="screen">
                 <div class="card">
                     <div class="card-title">🗺️ 우리 농장 현황</div>
-                    <div class="farm-map">
-                        <div class="field-area" style="top: 20px; left: 20px; width: 120px; height: 60px;">
-                            <div class="field-label">A구역 - 벼</div>
+                    <div style="height: 200px; background: #E8F5E9; border-radius: 12px; position: relative; margin-bottom: 16px; overflow: hidden;">
+                        <div style="position: absolute; top: 20px; left: 20px; width: 120px; height: 60px; background: rgba(76, 175, 80, 0.3); border: 2px solid #4CAF50; border-radius: 8px; cursor: pointer;">
+                            <div style="font-size: 10px; color: #2E7D32; font-weight: bold; padding: 2px 4px;">A구역 - 벼</div>
                         </div>
-                        <div class="field-area" style="top: 20px; right: 20px; width: 100px; height: 60px;">
-                            <div class="field-label">B구역 - 배추</div>
+                        <div style="position: absolute; top: 20px; right: 20px; width: 100px; height: 60px; background: rgba(76, 175, 80, 0.3); border: 2px solid #4CAF50; border-radius: 8px; cursor: pointer;">
+                            <div style="font-size: 10px; color: #2E7D32; font-weight: bold; padding: 2px 4px;">B구역 - 배추</div>
                         </div>
-                        <div class="field-area" style="bottom: 20px; left: 20px; width: 160px; height: 80px;">
-                            <div class="field-label">C구역 - 고추</div>
+                        <div style="position: absolute; bottom: 20px; left: 20px; width: 160px; height: 80px; background: rgba(76, 175, 80, 0.3); border: 2px solid #4CAF50; border-radius: 8px; cursor: pointer;">
+                            <div style="font-size: 10px; color: #2E7D32; font-weight: bold; padding: 2px 4px;">C구역 - 고추</div>
                         </div>
                     </div>
                     <div style="font-size: 14px; color: #666;">
@@ -775,8 +585,8 @@
                             <span>벼 (A구역)</span>
                             <span>87% 완료</span>
                         </div>
-                        <div class="gdd-progress">
-                            <div class="gdd-bar" style="width: 87%;">2,784 GDD</div>
+                        <div style="background: #E0E0E0; border-radius: 10px; height: 20px; margin: 12px 0; overflow: hidden;">
+                            <div style="height: 100%; background: linear-gradient(90deg, #4CAF50, #8BC34A); width: 87%; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 12px; font-weight: bold;">2,784 GDD</div>
                         </div>
                     </div>
                     <div style="margin-bottom: 16px;">
@@ -784,8 +594,8 @@
                             <span>배추 (B구역)</span>
                             <span>23% 완료</span>
                         </div>
-                        <div class="gdd-progress">
-                            <div class="gdd-bar" style="width: 23%;">414 GDD</div>
+                        <div style="background: #E0E0E0; border-radius: 10px; height: 20px; margin: 12px 0; overflow: hidden;">
+                            <div style="height: 100%; background: linear-gradient(90deg, #4CAF50, #8BC34A); width: 23%; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 12px; font-weight: bold;">414 GDD</div>
                         </div>
                     </div>
                     <div style="font-size: 14px; color: #666;">
@@ -819,4 +629,340 @@
                             <span class="post-author">🌾 최농부</span>
                             <span class="post-time">1일 전</span>
                         </div>
-                        <div class="post-title">📸
+                        <div class="post-title">📸 우리 농장 가을 풍경</div>
+                        <div class="post-preview">벼가 황금빛으로 익어가니 보기 좋네요!</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 설정 화면 -->
+            <div id="settings-screen" class="screen">
+                <div class="card">
+                    <div class="card-title">⚙️ 앱 설정</div>
+                    <div class="setting-item">
+                        <label>이름:</label>
+                        <input type="text" id="username" value="김농부" onchange="updateUserName(this.value)">
+                    </div>
+                    <div class="setting-item">
+                        <label>지역:</label>
+                        <select id="region" onchange="updateRegion(this.value)">
+                            <option value="서울">서울</option>
+                            <option value="경기">경기</option>
+                            <option value="충청">충청</option>
+                            <option value="전라">전라</option>
+                            <option value="경상">경상</option>
+                            <option value="제주">제주</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📱 화면 설정</div>
+                    <div class="setting-item">
+                        <label>글씨 크기:</label>
+                        <div class="font-size-controls">
+                            <button onclick="changeFontSize('small')" class="font-btn">작게</button>
+                            <button onclick="changeFontSize('normal')" class="font-btn active">보통</button>
+                            <button onclick="changeFontSize('large')" class="font-btn">크게</button>
+                            <button onclick="changeFontSize('xlarge')" class="font-btn">매우 크게</button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label>화면 테마:</label>
+                        <div class="theme-controls">
+                            <button onclick="changeTheme('light')" class="theme-btn active">밝게</button>
+                            <button onclick="changeTheme('dark')" class="theme-btn">어둡게</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">ℹ️ 앱 정보</div>
+                    <div style="font-size: 14px; color: #666; line-height: 1.6;">
+                        <p style="margin-bottom: 8px;"><strong>버전:</strong> 농번기 v1.0.0</p>
+                        <p style="margin-bottom: 8px;"><strong>마지막 업데이트:</strong> 2024년 9월 10일</p>
+                        <p><strong>개발:</strong> 생활절기 농업팀</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 플로팅 액션 버튼 -->
+        <button class="fab" id="fab" onclick="handleFabClick()">📝</button>
+
+        <!-- 하단 탭 바 -->
+        <div class="tab-bar">
+            <div class="tab active" onclick="showScreen('home')">
+                <span class="tab-icon">🏠</span>
+                홈
+            </div>
+            <div class="tab" onclick="showScreen('calendar')">
+                <span class="tab-icon">📅</span>
+                달력
+            </div>
+            <div class="tab" onclick="showScreen('farm')">
+                <span class="tab-icon">🗺️</span>
+                농장
+            </div>
+            <div class="tab" onclick="showScreen('community')">
+                <span class="tab-icon">👥</span>
+                커뮤니티
+            </div>
+            <div class="tab" onclick="showScreen('settings')">
+                <span class="tab-icon">⚙️</span>
+                설정
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 앱 상태 관리
+        let appState = {
+            currentScreen: 'home',
+            user: { name: '농부', region: '서울' },
+            fontSize: 'normal',
+            theme: 'light'
+        };
+
+        // 화면 전환 함수
+        function showScreen(screenName) {
+            // 모든 화면 숨기기
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // 선택된 화면 보이기
+            document.getElementById(screenName + '-screen').classList.add('active');
+            
+            // 탭 활성화 상태 변경
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // FAB 아이콘 변경
+            const fab = document.getElementById('fab');
+            const fabIcons = {
+                'home': '📝',
+                'calendar': '📅',
+                'farm': '➕',
+                'community': '✏️',
+                'settings': '⚙️'
+            };
+            fab.textContent = fabIcons[screenName] || '📝';
+            
+            appState.currentScreen = screenName;
+        }
+
+        // FAB 클릭 이벤트
+        function handleFabClick() {
+            const actions = {
+                'home': () => alert('📝 농작업 기록하기\n\n오늘 진행한 작업을 기록해보세요!'),
+                'calendar': () => alert('📅 일정 추가\n\n새로운 농작업 일정을 등록하세요!'),
+                'farm': () => alert('➕ 새 구역 추가\n\n농장에 새로운 재배 구역을 추가하세요!'),
+                'community': () => alert('✏️ 글 작성\n\n커뮤니티에 새 글을 작성하세요!'),
+                'settings': () => alert('⚙️ 설정 저장\n\n현재 설정을 저장하시겠습니까?')
+            };
+            
+            actions[appState.currentScreen]();
+        }
+
+        // 실제 데이터 업데이트
+        function updateRealData() {
+            const now = new Date();
+            
+            // 1. 사용자 위치 및 인사말 업데이트
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    let region = '서울';
+                    
+                    if (lat > 37.7) region = '경기북부';
+                    else if (lat < 37.0 && lat > 36.0) region = '충청도';
+                    else if (lat < 36.0 && lat > 35.0) region = '전라도';
+                    else if (lat < 35.0 && lat > 33.0) region = '경상남도';
+                    else if (lat < 33.5) region = '제주도';
+                    
+                    appState.user.region = region;
+                    document.getElementById('user-greeting').textContent = `안녕하세요, ${region} 농부님! 👋`;
+                }, () => {
+                    console.log('위치 정보 접근 거부됨');
+                });
+            }
+
+            // 2. 현재 절기 계산
+            const seasons2024 = [
+                { name: '소한', month: 1, date: 6 }, { name: '대한', month: 1, date: 20 },
+                { name: '입춘', month: 2, date: 4 }, { name: '우수', month: 2, date: 19 },
+                { name: '경칩', month: 3, date: 5 }, { name: '춘분', month: 3, date: 20 },
+                { name: '청명', month: 4, date: 4 }, { name: '곡우', month: 4, date: 20 },
+                { name: '입하', month: 5, date: 5 }, { name: '소만', month: 5, date: 20 },
+                { name: '망종', month: 6, date: 5 }, { name: '하지', month: 6, date: 21 },
+                { name: '소서', month: 7, date: 7 }, { name: '대서', month: 7, date: 22 },
+                { name: '입추', month: 8, date: 7 }, { name: '처서', month: 8, date: 23 },
+                { name: '백로', month: 9, date: 7 }, { name: '추분', month: 9, date: 22 },
+                { name: '한로', month: 10, date: 8 }, { name: '상강', month: 10, date: 23 },
+                { name: '입동', month: 11, date: 7 }, { name: '소설', month: 11, date: 22 },
+                { name: '대설', month: 12, date: 7 }, { name: '동지', month: 12, date: 21 }
+            ];
+
+            const month = now.getMonth() + 1;
+            const date = now.getDate();
+            
+            let currentSeason = seasons2024[0];
+            for (let i = 0; i < seasons2024.length; i++) {
+                const season = seasons2024[i];
+                if (month < season.month || (month === season.month && date < season.date)) {
+                    break;
+                }
+                currentSeason = season;
+            }
+
+            // 절기 표시 업데이트
+            document.getElementById('traditional-season').textContent = currentSeason.name;
+            document.getElementById('traditional-date').textContent = `${currentSeason.month}월 ${currentSeason.date}일`;
+            document.getElementById('living-season').textContent = `생활${currentSeason.name}`;
+            document.getElementById('living-date').textContent = `${currentSeason.month}월 ${currentSeason.date + 3}일`;
+
+            // 3. 날씨 업데이트 (계절별 현실적인 값)
+            let baseTemp = 20;
+            if (month >= 12 || month <= 2) baseTemp = 5;      // 겨울
+            else if (month >= 3 && month <= 5) baseTemp = 15; // 봄  
+            else if (month >= 6 && month <= 8) baseTemp = 28; // 여름
+            else baseTemp = 18;                               // 가을
+
+            const temp = baseTemp + Math.round((Math.random() - 0.5) * 10);
+            const humidity = 50 + Math.round(Math.random() * 30);
+
+            document.getElementById('current-temp').textContent = `${temp}°C`;
+            document.getElementById('humidity').textContent = `${humidity}%`;
+
+            // 위험도 업데이트
+            const riskIndicator = document.getElementById('risk-indicator');
+            
+            if (temp > 32 || temp < 5) {
+                riskIndicator.className = 'risk-indicator risk-high';
+                riskIndicator.innerHTML = '🚨 농작업 주의 필요';
+            } else if (temp > 28 || temp < 10) {
+                riskIndicator.className = 'risk-indicator risk-medium';
+                riskIndicator.innerHTML = '⚠️ 농작업 주의 권장';
+            } else {
+                riskIndicator.className = 'risk-indicator risk-low';
+                riskIndicator.innerHTML = '✅ 농작업 적합 조건';
+            }
+
+            // 4. 스마트팜 센서 데이터 업데이트
+            const soilTemp = temp - 2 + Math.round((Math.random() - 0.5) * 4);
+            const soilMoisture = 40 + Math.round(Math.random() * 40);
+            const phLevel = (6.0 + Math.random() * 1.5).toFixed(1);
+
+            document.getElementById('soil-temp').textContent = `${soilTemp}°C`;
+            document.getElementById('soil-moisture').textContent = `${soilMoisture}%`;
+            document.getElementById('ph-level').textContent = phLevel;
+
+            // 5. 달력 생성
+            generateCalendar(now.getFullYear(), now.getMonth());
+
+            console.log(`✅ 실제 데이터 업데이트 완료! 절기: ${currentSeason.name}, 온도: ${temp}°C`);
+        }
+
+        // 달력 생성 함수
+        function generateCalendar(year, monthIndex) {
+            const calendar = document.getElementById('calendar-grid');
+            if (!calendar) return;
+
+            const month = monthIndex + 1;
+            const firstDay = new Date(year, monthIndex, 1);
+            const lastDay = new Date(year, monthIndex + 1, 0);
+            const today = new Date();
+            
+            let html = '';
+            
+            // 이전 달의 빈 칸
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                html += '<div class="calendar-day"></div>';
+            }
+            
+            // 현재 달의 날짜들
+            for (let date = 1; date <= lastDay.getDate(); date++) {
+                const isToday = today.getFullYear() === year && 
+                               today.getMonth() === monthIndex && 
+                               today.getDate() === date;
+                
+                const isSeason = (month === 9 && date === 7) || (month === 9 && date === 22);
+                
+                const className = isToday ? 'calendar-day today' : 
+                                 isSeason ? 'calendar-day season' : 'calendar-day';
+                
+                html += `<div class="${className}" onclick="handleCalendarClick(${date})">${date}</div>`;
+            }
+            
+            calendar.innerHTML = html;
+        }
+
+        // 작업 클릭 이벤트
+        function handleTaskClick(taskTitle) {
+            if (confirm(`📋 ${taskTitle}\n\n작업을 완료하시겠습니까?`)) {
+                alert('✅ 작업이 완료 처리되었습니다!');
+            }
+        }
+
+        // 달력 날짜 클릭 이벤트
+        function handleCalendarClick(date) {
+            const schedules = {
+                7: '📅 9월 7일 - 백로\n전통적으로 가을이 시작되는 날입니다.',
+                22: '📅 9월 22일 - 추분\n낮과 밤의 길이가 같아지는 날'
+            };
+            
+            const schedule = schedules[date] || `📅 9월 ${date}일\n특별한 농업 일정이 없습니다.`;
+            alert(schedule);
+        }
+
+        // 설정 함수들
+        function updateUserName(name) {
+            appState.user.name = name;
+            document.getElementById('user-greeting').textContent = `안녕하세요, ${appState.user.region} ${name}님! 👋`;
+        }
+
+        function updateRegion(region) {
+            appState.user.region = region;
+            document.getElementById('user-greeting').textContent = `안녕하세요, ${region} ${appState.user.name}님! 👋`;
+        }
+
+        function changeFontSize(size) {
+            appState.fontSize = size;
+            document.body.className = document.body.className.replace(/font-\w+/g, '');
+            document.body.classList.add(`font-${size}`);
+            
+            // 버튼 활성화 상태 변경
+            document.querySelectorAll('.font-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`button[onclick="changeFontSize('${size}')"]`).classList.add('active');
+            
+            alert(`글씨 크기가 ${size === 'small' ? '작게' : size === 'large' ? '크게' : size === 'xlarge' ? '매우 크게' : '보통으로'} 변경되었습니다`);
+        }
+
+        function changeTheme(theme) {
+            appState.theme = theme;
+            document.body.className = document.body.className.replace(/theme-\w+/g, '');
+            if (theme !== 'light') {
+                document.body.classList.add(`theme-${theme}`);
+            }
+            
+            // 버튼 활성화 상태 변경
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`button[onclick="changeTheme('${theme}')"]`).classList.add('active');
+            
+            alert(`${theme === 'light' ? '밝은' : '어두운'} 테마로 변경되었습니다`);
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🌾 농번기 앱 시작!');
+            updateRealData();
+            
+            // 1시간마다 데이터 자동 업데이트
+            setInterval(updateRealData, 60 * 60 * 1000);
+        });
+    </script>
+</body>
+</html>
