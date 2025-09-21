@@ -1,1198 +1,3136 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌾 농번기 - 생활절기 농업앱</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
-            background: linear-gradient(135deg, #4CAF50, #81C784);
-            min-height: 100vh;
-            padding: 0;
-            overflow-x: hidden;
-        }
-        .app {
-            max-width: 400px;
-            margin: 0 auto;
-            background: #FFFFFF;
-            min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        .header { 
-            background: #4CAF50;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .title { 
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        .subtitle { 
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        .container { 
-            padding: 20px;
-            padding-bottom: 100px;
-        }
-        .screen {
-            display: none;
-        }
-        .screen.active {
-            display: block;
-        }
-        .greeting {
-            background: #F8F9FA;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border-left: 4px solid #4CAF50;
-        }
-        .greeting-text {
-            font-size: 18px;
-            color: #2E7D32;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        .greeting-sub {
-            font-size: 14px;
-            color: #666;
-        }
-        .card { 
-            background: #FFFFFF;
-            border: 1px solid #E0E0E0;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .card-title { 
-            font-size: 18px;
-            color: #2E7D32;
-            margin-bottom: 16px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .season-comparison {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-        .season-item {
-            text-align: center;
-            padding: 12px;
-            border-radius: 8px;
-            border: 2px solid #E0E0E0;
-        }
-        .season-item.traditional {
-            background: #E3F2FD;
-            border-color: #2196F3;
-        }
-        .season-item.living {
-            background: #E8F5E9;
-            border-color: #4CAF50;
-        }
-        .season-label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 4px;
-        }
-        .season-name {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        .season-date {
-            font-size: 12px;
-            color: #666;
-        }
-        .difference-badge {
-            background: #FFF3E0;
-            color: #FF9800;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            margin-top: 12px;
-        }
-        .weather-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-        .weather-item {
-            text-align: center;
-        }
-        .weather-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #FF5722;
-            display: block;
-        }
-        .weather-label {
-            font-size: 12px;
-            color: #666;
-        }
-        .risk-indicator {
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 12px;
-        }
-        .risk-low { background: #E8F5E9; color: #4CAF50; }
-        .risk-medium { background: #FFF3E0; color: #FF9800; }
-        .risk-high { background: #FFEBEE; color: #F44336; }
-        .task-list {
-            space-y: 8px;
-        }
-        .task-item {
-            background: #F8F9FA;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border-left: 4px solid #4CAF50;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .task-item:hover {
-            background: #E8F5E9;
-            transform: translateX(4px);
-        }
-        .task-item.urgent {
-            border-left-color: #F44336;
-            background: #FFEBEE;
-        }
-        .task-item.urgent:hover {
-            background: #FFCDD2;
-        }
-        .task-content {
-            flex: 1;
-        }
-        .task-title {
-            font-size: 14px;
-            color: #333;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-        .task-status {
-            font-size: 12px;
-            color: #666;
-        }
-        .task-priority {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-left: 8px;
-        }
-        .priority-high { background: #F44336; }
-        .priority-medium { background: #FF9800; }
-        .priority-low { background: #4CAF50; }
-        .sensor-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        .sensor-item {
-            text-align: center;
-            padding: 12px;
-            background: #F8F9FA;
-            border-radius: 8px;
-        }
-        .sensor-value {
-            font-size: 18px;
-            color: #4CAF50;
-            font-weight: bold;
-            display: block;
-        }
-        .sensor-label {
-            font-size: 11px;
-            color: #666;
-            margin-top: 4px;
-        }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-            margin-top: 16px;
-        }
-        .calendar-day {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .calendar-day:hover {
-            background: #E8F5E9;
-        }
-        .calendar-day.today {
-            background: #4CAF50;
-            color: white;
-            font-weight: bold;
-        }
-        .calendar-day.season {
-            background: #FF9800;
-            color: white;
-        }
-        .community-post {
-            padding: 16px;
-            border-bottom: 1px solid #E0E0E0;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .community-post:hover {
-            background: #F8F9FA;
-        }
-        .post-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .post-author {
-            font-weight: bold;
-            color: #2E7D32;
-        }
-        .post-time {
-            font-size: 12px;
-            color: #666;
-        }
-        .post-title {
-            font-size: 16px;
-            color: #333;
-            margin-bottom: 4px;
-        }
-        .post-preview {
-            font-size: 14px;
-            color: #666;
-            line-height: 1.4;
-        }
-        
-        /* 설정 화면 스타일 */
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #F0F0F0;
-        }
-        .setting-item:last-child {
-            border-bottom: none;
-        }
-        .setting-item label {
-            font-weight: 600;
-            color: #333;
-            flex: 1;
-        }
-        .setting-item input, .setting-item select {
-            padding: 8px 12px;
-            border: 1px solid #E0E0E0;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        .font-size-controls, .theme-controls {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .font-btn, .theme-btn {
-            padding: 8px 12px;
-            border: 1px solid #E0E0E0;
-            background: #FFFFFF;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.2s;
-        }
-        .font-btn:hover, .theme-btn:hover {
-            background: #F0F0F0;
-        }
-        .font-btn.active, .theme-btn.active {
-            background: #4CAF50;
-            color: white;
-            border-color: #4CAF50;
-        }
-        
-        /* 플로팅 액션 버튼 */
-        .fab {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            background: #4CAF50;
-            border-radius: 50%;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: all 0.2s;
-            z-index: 50;
-        }
-        .fab:hover {
-            background: #45A049;
-            transform: scale(1.1);
-        }
-        
-        /* 탭바 스타일 */
-        .tab-bar {
-            background: #FFFFFF;
-            border-top: 1px solid #E0E0E0;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-            padding: 8px 0;
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 400px;
-            z-index: 100;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
-        .tab {
-            padding: 8px 4px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 10px;
-            color: #666;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        .tab:hover, .tab.active {
-            background: #E8F5E9;
-            color: #4CAF50;
-            border-radius: 8px;
-            margin: 0 2px;
-        }
-        .tab-icon {
-            font-size: 20px;
-            display: block;
-            margin-bottom: 2px;
-        }
-        
-        /* 모바일 최적화 */
-        @media (max-width: 480px) {
-            .app {
-                max-width: 100%;
-            }
-            .container {
-                padding: 16px;
-                padding-bottom: 100px;
-            }
-            .tab {
-                font-size: 9px;
-                padding: 6px 2px;
-            }
-            .tab-icon {
-                font-size: 18px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="app">
-        <!-- 헤더 -->
-        <div class="header">
-            <div class="title">🌾 농번기</div>
-            <div class="subtitle">생활절기 스마트 농업 관리 시스템</div>
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Calendar, Thermometer, CloudRain, Sun, Wind, AlertTriangle, TrendingUp, MapPin, Clock, Bell, Droplets, Eye, Activity, Settings, Camera, Bug, Leaf, Calculator, Map, BarChart3, Timer, Zap, CheckCircle, Users, MessageCircle, Star, Award, BookOpen, Phone, Volume2, Wifi, WifiOff, DollarSign, Heart, Share, Filter, Search, Send, ThumbsUp, AlertCircle, TrendingDown, ArrowUp, ArrowDown, Shield, Video, Headphones, Download, Wrench, Battery, Cpu, Database, Navigation, Smartphone, Monitor, Upload, Save, RefreshCw, Play, Pause, Home, Menu, X, Plus, Edit3, Trash2, FileText, Image, Mic, MicOff, Speaker, Target, Scissors, Sprout, Wheat, Apple } from 'lucide-react';
+
+// A. 핵심 데이터 구조 정의
+const CROP_DATABASE = {
+  rice: {
+    name: '벼',
+    baseTemp: 10,
+    gddStages: [
+      { stage: '파종', gdd: 0, tasks: ['종자 준비', '논 정리'], duration: 7 },
+      { stage: '발아', gdd: 120, tasks: ['물 관리', '온도 조절'], duration: 14 },
+      { stage: '분얼', gdd: 400, tasks: ['제초', '추비시용'], duration: 30 },
+      { stage: '수잉', gdd: 800, tasks: ['물 깊이 조절', '병해충 방제'], duration: 35 },
+      { stage: '출수', gdd: 1200, tasks: ['수분 관리', '조류 방제'], duration: 20 },
+      { stage: '성숙', gdd: 1600, tasks: ['수확 준비', '건조 준비'], duration: 30 }
+    ],
+    plantingCalendar: {
+      early: { month: 4, day: 15, regions: ['남부'] },
+      normal: { month: 5, day: 15, regions: ['중부'] },
+      late: { month: 6, day: 1, regions: ['북부'] }
+    },
+    soilRequirements: { ph: [5.5, 6.5], nitrogen: [100, 150], moisture: [80, 95] },
+    pests: ['벼멸구', '도열병', '잎마름병'],
+    expectedYield: { min: 1.5, max: 2.2, unit: 'kg/평' }
+  },
+  cabbage: {
+    name: '배추',
+    baseTemp: 5,
+    gddStages: [
+      { stage: '파종', gdd: 0, tasks: ['종자 소독', '상토 준비'], duration: 3 },
+      { stage: '발아', gdd: 80, tasks: ['온도 관리', '습도 조절'], duration: 7 },
+      { stage: '본엽', gdd: 200, tasks: ['간식', '웃거름'], duration: 21 },
+      { stage: '결구시작', gdd: 500, tasks: ['충분한 관수', '토양 관리'], duration: 20 },
+      { stage: '결구완성', gdd: 800, tasks: ['수확 준비', '저장 준비'], duration: 15 }
+    ],
+    plantingCalendar: {
+      spring: { month: 3, day: 15, regions: ['전국'] },
+      summer: { month: 8, day: 15, regions: ['전국'] },
+      fall: { month: 9, day: 15, regions: ['남부'] }
+    },
+    soilRequirements: { ph: [6.0, 7.0], nitrogen: [120, 180], moisture: [60, 75] },
+    pests: ['진딧물', '배추좀나방', '무름병'],
+    expectedYield: { min: 15, max: 25, unit: 'kg/평' }
+  }
+};
+
+// B. 지역별 기후 데이터
+const REGIONAL_CLIMATE_DATA = {
+  '공주시': {
+    coordinates: { lat: 36.4645, lng: 127.1204 },
+    elevaton: 45,
+    climateZone: '중부내륙',
+    averageTemp: { spring: 12.5, summer: 25.8, fall: 14.2, winter: -1.8 },
+    growingSeason: { start: '3월 15일', end: '11월 10일' },
+    soilType: '충적토',
+    annualPrecipitation: 1200,
+    frostFreeDays: 195
+  }
+};
+
+// C. 생활절기 계산 알고리즘
+const calculateLivingSeason = (region, currentDate, weatherHistory) => {
+  const traditionalSeasons = [
+    { name: '입춘', date: '2024-02-04', temp: 0 },
+    { name: '우수', date: '2024-02-19', temp: 2 },
+    { name: '경칩', date: '2024-03-05', temp: 5 },
+    { name: '춘분', date: '2024-03-20', temp: 8 },
+    { name: '청명', date: '2024-04-04', temp: 12 },
+    { name: '곡우', date: '2024-04-20', temp: 15 },
+    { name: '입하', date: '2024-05-05', temp: 18 },
+    { name: '소만', date: '2024-05-21', temp: 22 },
+    { name: '망종', date: '2024-06-05', temp: 25 },
+    { name: '하지', date: '2024-06-21', temp: 28 },
+    { name: '소서', date: '2024-07-07', temp: 30 },
+    { name: '대서', date: '2024-07-22', temp: 32 },
+    { name: '입추', date: '2024-08-07', temp: 30 },
+    { name: '처서', date: '2024-08-23', temp: 28 },
+    { name: '백로', date: '2024-09-07', temp: 25 },
+    { name: '추분', date: '2024-09-22', temp: 20 }
+  ];
+
+  const currentSeason = traditionalSeasons.find(season => {
+    const seasonDate = new Date(season.date);
+    return Math.abs(currentDate - seasonDate) < 15 * 24 * 60 * 60 * 1000;
+  });
+
+  if (!currentSeason) return null;
+
+  const recentAvgTemp = weatherHistory.slice(-7).reduce((sum, day) => sum + day.avgTemp, 0) / 7;
+  const expectedTemp = currentSeason.temp;
+  const tempDiff = recentAvgTemp - expectedTemp;
+  const dayAdjustment = Math.round(tempDiff / 2);
+  
+  const livingSeasonDate = new Date(currentSeason.date);
+  livingSeasonDate.setDate(livingSeasonDate.getDate() + dayAdjustment);
+
+  return {
+    traditional: {
+      name: currentSeason.name,
+      date: currentSeason.date,
+      expectedTemp: expectedTemp
+    },
+    living: {
+      name: `실질${currentSeason.name}`,
+      date: livingSeasonDate.toISOString().split('T')[0],
+      actualTemp: recentAvgTemp,
+      adjustment: dayAdjustment > 0 ? `+${dayAdjustment}일` : `${dayAdjustment}일`
+    }
+  };
+};
+
+// D. GDD (Growing Degree Day) 실제 계산
+const calculateRealGDD = (maxTemp, minTemp, baseTemp = 10) => {
+  const avgTemp = (maxTemp + minTemp) / 2;
+  return Math.max(0, avgTemp - baseTemp);
+};
+
+const calculateAccumulatedGDD = (plantingDate, weatherHistory, baseTemp = 10) => {
+  const planting = new Date(plantingDate);
+  let accumulated = 0;
+  
+  weatherHistory.forEach(day => {
+    const dayDate = new Date(day.date);
+    if (dayDate >= planting) {
+      accumulated += calculateRealGDD(day.maxTemp, day.minTemp, baseTemp);
+    }
+  });
+  
+  return accumulated;
+};
+
+// E. 작물 생육단계 실시간 추적
+const trackCropGrowthStage = (cropType, plantingDate, gddAccumulated, weatherHistory) => {
+  const crop = CROP_DATABASE[cropType];
+  if (!crop) return null;
+
+  let currentStageIndex = 0;
+  let nextStageIndex = 1;
+
+  for (let i = 0; i < crop.gddStages.length; i++) {
+    if (gddAccumulated >= crop.gddStages[i].gdd) {
+      currentStageIndex = i;
+      nextStageIndex = Math.min(i + 1, crop.gddStages.length - 1);
+    }
+  }
+
+  const currentStage = crop.gddStages[currentStageIndex];
+  const nextStage = crop.gddStages[nextStageIndex];
+  
+  const gddToNext = nextStage.gdd - gddAccumulated;
+  
+  const recentAvgGDD = weatherHistory.slice(-7).reduce((sum, day) => 
+    sum + calculateRealGDD(day.maxTemp, day.minTemp, crop.baseTemp), 0) / 7;
+  
+  const estimatedDaysToNext = recentAvgGDD > 0 ? Math.ceil(gddToNext / recentAvgGDD) : null;
+
+  return {
+    current: {
+      ...currentStage,
+      progress: Math.min(100, (gddAccumulated / currentStage.gdd) * 100)
+    },
+    next: nextStage,
+    gddAccumulated,
+    gddToNext,
+    estimatedDaysToNext,
+    overallProgress: (gddAccumulated / crop.gddStages[crop.gddStages.length - 1].gdd) * 100
+  };
+};
+
+// F. 이상기후 조기경보 시스템
+const analyzeWeatherRisks = (weatherHistory, forecast) => {
+  const risks = [];
+  const currentWeather = weatherHistory[weatherHistory.length - 1];
+  
+  const hotDays = weatherHistory.slice(-7).filter(day => day.maxTemp >= 33).length;
+  const extremeHotDays = weatherHistory.slice(-7).filter(day => day.maxTemp >= 35).length;
+  
+  if (extremeHotDays >= 3) {
+    risks.push({
+      type: 'HEATWAVE_EXTREME',
+      severity: 'critical',
+      title: '극한폭염 경보',
+      message: `${extremeHotDays}일 연속 35°C 이상, 작물 고사 위험`,
+      actions: [
+        '긴급 관수 시스템 가동',
+        '차광망 100% 설치',
+        '오전 6-9시에만 작업',
+        '가축 그늘막 점검'
+      ],
+      autoActions: ['START_EMERGENCY_IRRIGATION', 'DEPLOY_SHADE_NETS', 'ACTIVATE_COOLING']
+    });
+  } else if (hotDays >= 5) {
+    risks.push({
+      type: 'HEATWAVE_WARNING',
+      severity: 'high',
+      title: '폭염 주의보',
+      message: `${hotDays}일 연속 고온, 작물 스트레스 증가`,
+      actions: [
+        '관수량 50% 증량',
+        '차광막 설치',
+        '오전 작업 권장'
+      ],
+      autoActions: ['INCREASE_IRRIGATION', 'PARTIAL_SHADING']
+    });
+  }
+
+  const dryDays = weatherHistory.slice(-14).filter(day => day.rainfall < 1).length;
+  const totalRainfall = weatherHistory.slice(-14).reduce((sum, day) => sum + day.rainfall, 0);
+  
+  if (dryDays >= 14 && totalRainfall < 10) {
+    risks.push({
+      type: 'DROUGHT_SEVERE',
+      severity: 'critical',
+      title: '심각한 가뭄',
+      message: `${dryDays}일간 강수 부족, 총 강수량 ${totalRainfall.toFixed(1)}mm`,
+      actions: [
+        '비상 급수 계획 가동',
+        '관수 스케줄 조정',
+        '절수형 작물 전환 검토'
+      ],
+      autoActions: ['MAXIMIZE_IRRIGATION', 'WATER_CONSERVATION_MODE']
+    });
+  }
+
+  return risks.sort((a, b) => {
+    const severityOrder = { critical: 3, high: 2, medium: 1, low: 0 };
+    return severityOrder[b.severity] - severityOrder[a.severity];
+  });
+};
+
+// G. 스마트팜 자동제어 시스템
+const SmartFarmController = {
+  calculateIrrigationNeeds: (soilMoisture, weather, cropType, growthStage) => {
+    const crop = CROP_DATABASE[cropType];
+    const soilReq = crop.soilRequirements;
+    
+    const targetMoisture = (soilReq.moisture[0] + soilReq.moisture[1]) / 2;
+    const moistureDeficit = targetMoisture - soilMoisture;
+    
+    if (moistureDeficit <= 0) {
+      return { action: 'MAINTAIN', duration: 0, reason: '적정 수분 상태' };
+    }
+    
+    let intensityMultiplier = 1.0;
+    if (weather.maxTemp > 35) intensityMultiplier = 1.5;
+    if (weather.humidity < 50) intensityMultiplier *= 1.2;
+    if (weather.windSpeed > 10) intensityMultiplier *= 1.1;
+    
+    const baseDuration = moistureDeficit * 2;
+    const adjustedDuration = Math.ceil(baseDuration * intensityMultiplier);
+    
+    return {
+      action: 'START_IRRIGATION',
+      duration: adjustedDuration,
+      intensity: moistureDeficit > 15 ? 'high' : 'normal',
+      reason: `토양습도 ${soilMoisture}% < 목표 ${targetMoisture}%`,
+      expectedIncrease: Math.min(moistureDeficit, adjustedDuration * 0.5)
+    };
+  }
+};
+
+// H. AI 기반 병해충 모니터링 시스템
+const PestMonitoringAI = {
+  analyzeImage: (imageData, cropType, environmentalData) => {
+    const pestDatabase = {
+      rice: [
+        { name: '벼멸구', probability: 0.85, confidence: 'high', treatment: '이미다클로프리드 1000배' },
+        { name: '도열병', probability: 0.72, confidence: 'medium', treatment: '카스가마이신 1500배' }
+      ],
+      cabbage: [
+        { name: '진딧물', probability: 0.91, confidence: 'high', treatment: '티아메톡삼 2000배' },
+        { name: '배추좀나방', probability: 0.78, confidence: 'high', treatment: '클로르페나피르 1000배' }
+      ]
+    };
+
+    const pests = pestDatabase[cropType] || [];
+    
+    const adjustedPests = pests.map(pest => {
+      let adjustedProb = pest.probability;
+      
+      if (environmentalData.humidity > 80 && environmentalData.temperature > 25) {
+        adjustedProb *= 1.2;
+      }
+      
+      if (environmentalData.soilMoisture < 40) {
+        adjustedProb *= 1.15;
+      }
+      
+      return {
+        ...pest,
+        probability: Math.min(adjustedProb, 0.99),
+        severity: adjustedProb > 0.8 ? 'high' : adjustedProb > 0.6 ? 'medium' : 'low'
+      };
+    });
+
+    return adjustedPests.filter(pest => pest.probability > 0.5);
+  }
+};
+
+// I. 수확량 예측 AI 시스템
+const YieldPredictionAI = {
+  calculateAdvancedYield: (cropData, weatherHistory, soilData, managementHistory) => {
+    const { cropType, plantingDate, area, variety, gddAccumulated } = cropData;
+    
+    const crop = CROP_DATABASE[cropType];
+    const baseYield = (crop.expectedYield.min + crop.expectedYield.max) / 2;
+    
+    let yieldMultiplier = 1.0;
+    
+    const optimalGDD = crop.gddStages[crop.gddStages.length - 1].gdd;
+    const gddRatio = gddAccumulated / optimalGDD;
+    if (gddRatio > 0.8 && gddRatio < 1.2) {
+      yieldMultiplier *= 1.1;
+    }
+    
+    const totalRainfall = weatherHistory.reduce((sum, day) => sum + day.rainfall, 0);
+    const avgTemp = weatherHistory.reduce((sum, day) => sum + day.avgTemp, 0) / weatherHistory.length;
+    const hotDays = weatherHistory.filter(day => day.maxTemp > 35).length;
+    
+    if (totalRainfall > 800 && totalRainfall < 1400) yieldMultiplier *= 1.05;
+    if (avgTemp > 18 && avgTemp < 26) yieldMultiplier *= 1.08;
+    if (hotDays > 10) yieldMultiplier *= 0.92;
+    
+    const predictedYield = baseYield * yieldMultiplier * area / 3.3;
+    const confidence = Math.round(85 + (weatherHistory.length > 60 ? 10 : 5));
+    
+    return {
+      predicted: Math.round(predictedYield),
+      unit: crop.expectedYield.unit.replace('/평', ''),
+      confidence: confidence,
+      factors: {
+        weather: Math.round((yieldMultiplier - 1) * 100),
+        soil: 85,
+        management: 80,
+        gdd: gddRatio > 1 ? '달성' : `${Math.round(gddRatio * 100)}%`
+      }
+    };
+  }
+};
+
+// 메인 앱 컴포넌트
+const CompleteFarmingApp = () => {
+  // 상태 관리
+  const [currentScreen, setCurrentScreen] = useState('home');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  
+  // 농업 데이터 상태
+  const [userProfile, setUserProfile] = useState({});
+  const [farmData, setFarmData] = useState({});
+  const [weatherData, setWeatherData] = useState({});
+  const [weatherHistory, setWeatherHistory] = useState([]);
+  const [crops, setCrops] = useState([]);
+  const [sensors, setSensors] = useState({});
+  const [devices, setDevices] = useState([]);
+  const [alerts, setAlerts] = useState([]);
+  const [pestAlerts, setPestAlerts] = useState([]);
+  const [yieldPredictions, setYieldPredictions] = useState({});
+  const [livingSeasons, setLivingSeasons] = useState({});
+  const [automationRules, setAutomationRules] = useState([]);
+
+  // 음성 안내 함수
+  const speakText = useCallback((text) => {
+    if (voiceEnabled && 'speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ko-KR';
+      utterance.rate = 0.8;
+      speechSynthesis.speak(utterance);
+    }
+  }, [voiceEnabled]);
+
+  // 센서 데이터 업데이트
+  const updateSensorData = useCallback(async () => {
+    const newSensorData = {
+      timestamp: new Date().toISOString(),
+      soilMoisture: 45 + Math.random() * 10,
+      soilTemp: 24 + Math.random() * 4,
+      airTemp: 32 + Math.random() * 6,
+      humidity: 70 + Math.random() * 15,
+      ph: 6.2 + Math.random() * 0.6,
+      nitrogen: 120 + Math.random() * 20,
+      phosphorus: 65 + Math.random() * 15,
+      potassium: 180 + Math.random() * 30,
+      co2: 420 + Math.random() * 80,
+      lightIntensity: 45000 + Math.random() * 10000,
+      windSpeed: 5.2 + Math.random() * 3,
+      leafWetness: Math.random() * 10,
+      leafTemp: 32 + Math.random() * 8
+    };
+    
+    setSensors(newSensorData);
+  }, []);
+
+  // J. 메인 홈화면 컴포넌트
+  const MainHomeScreen = () => {
+    const [activeAlert, setActiveAlert] = useState(null);
+    const [showDetailedWeather, setShowDetailedWeather] = useState(false);
+
+    return (
+      <div className="p-4 space-y-6 pb-24">
+        {/* J-1. 긴급 알림 섹션 */}
+        {alerts.length > 0 && (
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-4 shadow-lg">
+            <div className="flex items-center gap-2 text-red-800 font-bold mb-3">
+              <AlertTriangle className="w-6 h-6 animate-pulse" />
+              🚨 긴급 농업 알림 ({alerts.length}건)
+            </div>
+            
+            {alerts.slice(0, 2).map((alert, idx) => (
+              <div key={idx} className="mb-3 last:mb-0">
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    alert.severity === 'critical' ? 'bg-red-500 text-white' :
+                    alert.severity === 'high' ? 'bg-orange-500 text-white' :
+                    'bg-yellow-500 text-black'
+                  }`}>
+                    {alert.title}
+                  </span>
+                  <button 
+                    onClick={() => {
+                      setActiveAlert(alert);
+                      voiceEnabled && speakText(alert.message);
+                    }}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="text-red-700 text-sm mb-2">{alert.message}</div>
+                
+                {alert.actions?.slice(0, 2).map((action, actionIdx) => (
+                  <div key={actionIdx} className="flex items-center gap-2 text-xs">
+                    <CheckCircle className="w-3 h-3 text-green-600" />
+                    <span className="text-red-600">• {action}</span>
+                  </div>
+                ))}
+                
+                {alert.autoActions && (
+                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                    <div className="font-semibold text-blue-800 mb-1">🤖 AI 자동대응</div>
+                    {alert.autoActions.map((autoAction, autoIdx) => (
+                      <div key={autoIdx} className="text-blue-700">
+                        • {autoAction} ✅ 실행중
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* J-2. 생활절기 현황 카드 */}
+        <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
+            <Calendar className="w-6 h-6 text-green-600" />
+            오늘의 생활절기
+          </h3>
+          
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="text-center p-4 bg-green-100 rounded-lg">
+              <div className="text-sm text-gray-600 mb-1">전통절기</div>
+              <div className="font-bold text-xl text-green-700">
+                {livingSeasons?.traditional?.name || '처서'}
+              </div>
+              <div className="text-xs text-gray-500">
+                {livingSeasons?.traditional?.date || '8월 23일'}
+              </div>
+              <div className="text-xs text-green-600 mt-1">
+                예상기온: {livingSeasons?.traditional?.expectedTemp || 28}°C
+              </div>
+            </div>
+            <div className="text-center p-4 bg-blue-100 rounded-lg">
+              <div className="text-sm text-gray-600 mb-1">생활절기</div>
+              <div className="font-bold text-xl text-blue-700">
+                {livingSeasons?.living?.name || '실질처서'}
+              </div>
+              <div className="text-xs text-gray-500">
+                {livingSeasons?.living?.date || '8월 26일'}
+              </div>
+              <div className="text-xs text-blue-600 mt-1">
+                실제기온: {livingSeasons?.living?.actualTemp?.toFixed(1) || 31.2}°C
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <div className="font-semibold text-yellow-800 mb-1">📊 절기 분석</div>
+            <div className="text-sm text-yellow-700">
+              올해는 평년보다 {livingSeasons?.living?.adjustment || '+3일'} 늦은 절기로, 
+              기후변화의 영향으로 생육기간이 연장되고 있습니다.
+            </div>
+          </div>
         </div>
 
-        <!-- 메인 콘텐츠 -->
-        <div class="container">
-            <!-- 홈 화면 -->
-            <div id="home-screen" class="screen active">
-                <!-- 인사말 -->
-                <div class="greeting">
-                    <div class="greeting-text" id="user-greeting">안녕하세요, 농부님! 👋</div>
-                    <div class="greeting-sub">오늘도 좋은 농사일 되세요</div>
-                </div>
-
-                <!-- 절기 비교 -->
-                <div class="card">
-                    <div class="card-title">📅 현재 절기 비교</div>
-                    <div class="season-comparison">
-                        <div class="season-item traditional">
-                            <div class="season-label">전통절기</div>
-                            <div class="season-name" id="traditional-season">백로</div>
-                            <div class="season-date" id="traditional-date">9월 7일</div>
-                        </div>
-                        <div class="season-item living">
-                            <div class="season-label">생활절기</div>
-                            <div class="season-name" id="living-season">생활백로</div>
-                            <div class="season-date" id="living-date">9월 10일</div>
-                        </div>
-                    </div>
-                    <div class="difference-badge" id="season-difference">+3일 차이 (기온 상승으로 인한 조정)</div>
-                </div>
-
-                <!-- 날씨 및 위험도 -->
-                <div class="card">
-                    <div class="card-title">🌡️ 실시간 농업 기상</div>
-                    <div class="weather-grid">
-                        <div class="weather-item">
-                            <span class="weather-value" id="current-temp">22°C</span>
-                            <span class="weather-label">현재 기온</span>
-                        </div>
-                        <div class="weather-item">
-                            <span class="weather-value" style="color: #2196F3;" id="humidity">68%</span>
-                            <span class="weather-label">습도</span>
-                        </div>
-                    </div>
-                    <div class="risk-indicator risk-low" id="risk-indicator">
-                        ✅ 농작업 적합 조건
-                    </div>
-                    <div id="weather-recommendation">
-                        💡 오전 시간대 농작업을 권장합니다
-                    </div>
-                </div>
-
-                <!-- 오늘의 추천 작업 -->
-                <div class="card">
-                    <div class="card-title">✅ 오늘의 농작업 가이드</div>
-                    <div class="task-list" id="task-list">
-                        <div class="task-item urgent" onclick="handleTaskClick('가을 파종')">
-                            <div class="task-content">
-                                <div class="task-title">가을 파종</div>
-                                <div class="task-status">D-2</div>
-                            </div>
-                            <div class="task-priority priority-high"></div>
-                        </div>
-                        <div class="task-item" onclick="handleTaskClick('김장용 배추 관리')">
-                            <div class="task-content">
-                                <div class="task-title">김장용 배추 관리</div>
-                                <div class="task-status">진행중</div>
-                            </div>
-                            <div class="task-priority priority-medium"></div>
-                        </div>
-                        <div class="task-item" onclick="handleTaskClick('저장고 준비')">
-                            <div class="task-content">
-                                <div class="task-title">저장고 준비</div>
-                                <div class="task-status">예정</div>
-                            </div>
-                            <div class="task-priority priority-low"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 스마트팜 현황 -->
-                <div class="card">
-                    <div class="card-title">📊 스마트팜 실시간 모니터링</div>
-                    <div class="sensor-grid">
-                        <div class="sensor-item">
-                            <span class="sensor-value" id="soil-temp">24.5°C</span>
-                            <div class="sensor-label">토양온도</div>
-                        </div>
-                        <div class="sensor-item">
-                            <span class="sensor-value" id="soil-moisture">68%</span>
-                            <div class="sensor-label">토양습도</div>
-                        </div>
-                        <div class="sensor-item">
-                            <span class="sensor-value" id="ph-level">6.8</span>
-                            <div class="sensor-label">토양pH</div>
-                        </div>
-                    </div>
-                    <div style="text-align: center; color: #4CAF50; font-weight: bold;">
-                        ✅ 모든 센서 정상 작동 중
-                    </div>
-                </div>
-            </div>
-
-            <!-- 여기서 상편 끝 -->
-<!-- 캘린더 화면 -->
-            <div id="calendar-screen" class="screen">
-                <div class="card">
-                    <div class="card-title">📅 2024년 9월 농업 달력</div>
-                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 16px; text-align: center;">
-                        <div style="font-weight: bold; color: #666;">일</div>
-                        <div style="font-weight: bold; color: #666;">월</div>
-                        <div style="font-weight: bold; color: #666;">화</div>
-                        <div style="font-weight: bold; color: #666;">수</div>
-                        <div style="font-weight: bold; color: #666;">목</div>
-                        <div style="font-weight: bold; color: #666;">금</div>
-                        <div style="font-weight: bold; color: #666;">토</div>
-                    </div>
-                    <div class="calendar-grid" id="calendar-grid">
-                        <!-- 달력 생성됨 -->
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">🌾 절기별 주요 농작업</div>
-                    <div style="space-y: 12px;">
-                        <div style="padding: 12px; background: #E3F2FD; border-radius: 8px; margin-bottom: 8px;">
-                            <strong>백로 (9/7~9/21)</strong><br>
-                            <small>가을 작물 파종, 김장 준비, 벼 수확 시작</small>
-                        </div>
-                        <div style="padding: 12px; background: #FFF3E0; border-radius: 8px;">
-                            <strong>추분 (9/22~10/7)</strong><br>
-                            <small>본격적인 수확기, 저장고 준비, 내년 계획</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 농장 관리 화면 -->
-            <div id="farm-screen" class="screen">
-                <div class="card">
-                    <div class="card-title">🗺️ 우리 농장 현황</div>
-                    <div style="height: 200px; background: #E8F5E9; border-radius: 12px; position: relative; margin-bottom: 16px; overflow: hidden;">
-                        <div style="position: absolute; top: 20px; left: 20px; width: 120px; height: 60px; background: rgba(76, 175, 80, 0.3); border: 2px solid #4CAF50; border-radius: 8px; cursor: pointer;">
-                            <div style="font-size: 10px; color: #2E7D32; font-weight: bold; padding: 2px 4px;">A구역 - 벼</div>
-                        </div>
-                        <div style="position: absolute; top: 20px; right: 20px; width: 100px; height: 60px; background: rgba(76, 175, 80, 0.3); border: 2px solid #4CAF50; border-radius: 8px; cursor: pointer;">
-                            <div style="font-size: 10px; color: #2E7D32; font-weight: bold; padding: 2px 4px;">B구역 - 배추</div>
-                        </div>
-                        <div style="position: absolute; bottom: 20px; left: 20px; width: 160px; height: 80px; background: rgba(76, 175, 80, 0.3); border: 2px solid #4CAF50; border-radius: 8px; cursor: pointer;">
-                            <div style="font-size: 10px; color: #2E7D32; font-weight: bold; padding: 2px 4px;">C구역 - 고추</div>
-                        </div>
-                    </div>
-                    <div style="font-size: 14px; color: #666;">
-                        총 면적: 1,200평 (3,967㎡) | 3개 구역 운영중
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">📈 작물 생육 현황 (GDD 기준)</div>
-                    <div style="margin-bottom: 16px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                            <span>벼 (A구역)</span>
-                            <span>87% 완료</span>
-                        </div>
-                        <div style="background: #E0E0E0; border-radius: 10px; height: 20px; margin: 12px 0; overflow: hidden;">
-                            <div style="height: 100%; background: linear-gradient(90deg, #4CAF50, #8BC34A); width: 87%; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 12px; font-weight: bold;">2,784 GDD</div>
-                        </div>
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                            <span>배추 (B구역)</span>
-                            <span>23% 완료</span>
-                        </div>
-                        <div style="background: #E0E0E0; border-radius: 10px; height: 20px; margin: 12px 0; overflow: hidden;">
-                            <div style="height: 100%; background: linear-gradient(90deg, #4CAF50, #8BC34A); width: 23%; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 12px; font-weight: bold;">414 GDD</div>
-                        </div>
-                    </div>
-                    <div style="font-size: 14px; color: #666;">
-                        💡 GDD (Growing Degree Day): 작물 생육 단계를 측정하는 과학적 지표
-                    </div>
-                </div>
-            </div>
-
-            <!-- 커뮤니티 화면 -->
-            <div id="community-screen" class="screen">
-                <div class="card">
-                    <div class="card-title">👥 지역 농민 커뮤니티</div>
-                    <div class="community-post">
-                        <div class="post-header">
-                            <span class="post-author">🌾 박농부</span>
-                            <span class="post-time">2시간 전</span>
-                        </div>
-                        <div class="post-title">🐛 배추흰나비 방제 어떻게 하시나요?</div>
-                        <div class="post-preview">요즘 배추에 흰나비가 많이 보이네요. 친환경 방제법 있을까요?</div>
-                    </div>
-                    <div class="community-post">
-                        <div class="post-header">
-                            <span class="post-author">🌾 이농부</span>
-                            <span class="post-time">5시간 전</span>
-                        </div>
-                        <div class="post-title">🌧️ 태풍 대비책 공유합니다</div>
-                        <div class="post-preview">내일부터 비소식이 있어서 미리 준비했습니다...</div>
-                    </div>
-                    <div class="community-post">
-                        <div class="post-header">
-                            <span class="post-author">🌾 최농부</span>
-                            <span class="post-time">1일 전</span>
-                        </div>
-                        <div class="post-title">📸 우리 농장 가을 풍경</div>
-                        <div class="post-preview">벼가 황금빛으로 익어가니 보기 좋네요!</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 설정 화면 -->
-            <div id="settings-screen" class="screen">
-                <div class="card">
-                    <div class="card-title">⚙️ 앱 설정</div>
-                    <div class="setting-item">
-                        <label>이름:</label>
-                        <input type="text" id="username" value="김농부" onchange="updateUserName(this.value)">
-                    </div>
-                    <div class="setting-item">
-                        <label>지역:</label>
-                        <select id="region" onchange="updateRegion(this.value)">
-                            <option value="서울">서울</option>
-                            <option value="경기">경기</option>
-                            <option value="충청">충청</option>
-                            <option value="전라">전라</option>
-                            <option value="경상">경상</option>
-                            <option value="제주">제주</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">📱 화면 설정</div>
-                    <div class="setting-item">
-                        <label>글씨 크기:</label>
-                        <div class="font-size-controls">
-                            <button onclick="changeFontSize('small')" class="font-btn">작게</button>
-                            <button onclick="changeFontSize('normal')" class="font-btn active">보통</button>
-                            <button onclick="changeFontSize('large')" class="font-btn">크게</button>
-                            <button onclick="changeFontSize('xlarge')" class="font-btn">매우 크게</button>
-                        </div>
-                    </div>
-                    <div class="setting-item">
-                        <label>화면 테마:</label>
-                        <div class="theme-controls">
-                            <button onclick="changeTheme('light')" class="theme-btn active">밝게</button>
-                            <button onclick="changeTheme('dark')" class="theme-btn">어둡게</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">ℹ️ 앱 정보</div>
-                    <div style="font-size: 14px; color: #666; line-height: 1.6;">
-                        <p style="margin-bottom: 8px;"><strong>버전:</strong> 농번기 v1.0.0</p>
-                        <p style="margin-bottom: 8px;"><strong>마지막 업데이트:</strong> 2024년 9월 10일</p>
-                        <p><strong>개발:</strong> 생활절기 농업팀</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 플로팅 액션 버튼 -->
-        <button class="fab" id="fab" onclick="handleFabClick()">📝</button>
-
-        <!-- 하단 탭 바 -->
-        <div class="tab-bar">
-            <div class="tab active" onclick="showScreen('home')">
-                <span class="tab-icon">🏠</span>
-                홈
-            </div>
-            <div class="tab" onclick="showScreen('calendar')">
-                <span class="tab-icon">📅</span>
-                달력
-            </div>
-            <div class="tab" onclick="showScreen('farm')">
-                <span class="tab-icon">🗺️</span>
-                농장
-            </div>
-            <div class="tab" onclick="showScreen('community')">
-                <span class="tab-icon">👥</span>
-                커뮤니티
-            </div>
-            <div class="tab" onclick="showScreen('settings')">
-                <span class="tab-icon">⚙️</span>
-                설정
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // 앱 상태 관리
-        let appState = {
-            currentScreen: 'home',
-            user: { name: '농부', region: '서울' },
-            fontSize: 'normal',
-            theme: 'light'
-        };
-
-        // 화면 전환 함수
-        function showScreen(screenName) {
-            // 모든 화면 숨기기
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
+        {/* J-3. 실시간 작물 GDD 진행현황 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 text-orange-600" />
+            생육도일(GDD) 실시간 현황
+          </h3>
+          
+          {crops.slice(0, 2).map((crop, idx) => {
+            const yieldInfo = yieldPredictions[crop.id];
+            const stage = crop.growthStage;
             
-            // 선택된 화면 보이기
-            document.getElementById(screenName + '-screen').classList.add('active');
-            
-            // 탭 활성화 상태 변경
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
-            
-            // FAB 아이콘 변경
-            const fab = document.getElementById('fab');
-            const fabIcons = {
-                'home': '📝',
-                'calendar': '📅',
-                'farm': '➕',
-                'community': '✏️',
-                'settings': '⚙️'
-            };
-            fab.textContent = fabIcons[screenName] || '📝';
-            
-            appState.currentScreen = screenName;
-        }
-
-        // FAB 클릭 이벤트
-        function handleFabClick() {
-            const actions = {
-                'home': () => alert('📝 농작업 기록하기\n\n오늘 진행한 작업을 기록해보세요!'),
-                'calendar': () => alert('📅 일정 추가\n\n새로운 농작업 일정을 등록하세요!'),
-                'farm': () => alert('➕ 새 구역 추가\n\n농장에 새로운 재배 구역을 추가하세요!'),
-                'community': () => alert('✏️ 글 작성\n\n커뮤니티에 새 글을 작성하세요!'),
-                'settings': () => alert('⚙️ 설정 저장\n\n현재 설정을 저장하시겠습니까?')
-            };
-            
-            actions[appState.currentScreen]();
-        }
-
-        <!-- 중편 끝 -->
-// 기상청 API를 사용한 실제 날씨 데이터 연동
-        async function updateRealData() {
-            const now = new Date();
-            
-            // 기상청 API 호출
-            try {
-                await getKMAWeatherData();
-            } catch (error) {
-                console.log('기상청 API 오류, 대체 API 사용:', error);
-                await getOpenWeatherData();
-            }
-            
-            // 절기 및 달력 업데이트
-            updateSeasonData(now);
-            generateCalendar(now.getFullYear(), now.getMonth());
-        }
-
-        // 기상청 API 호출 함수
-        async function getKMAWeatherData() {
-            try {
-                // 기상청 API 키
-                const KMA_API_KEY = 'SQXvqeniQhSF76np4nIUIQ';
+            return (
+              <div key={crop.id} className="mb-6 last:mb-0 p-4 border border-gray-200 rounded-lg">
+                <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">
+                      {crop.type === 'rice' ? '🌾' : crop.type === 'cabbage' ? '🥬' : '🍅'}
+                    </div>
+                    <div>
+                      <div className="font-bold text-lg">{crop.name}</div>
+                      <div className="text-sm text-gray-600">{crop.variety} • {crop.area}평</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      crop.healthStatus === 'good' ? 'bg-green-100 text-green-700' :
+                      crop.healthStatus === 'warning' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>
+                      {crop.healthStatus === 'good' ? '양호' : 
+                       crop.healthStatus === 'warning' ? '주의' : '위험'}
+                    </div>
+                  </div>
+                </div>
                 
-                // 현재 시간을 기상청 API 형식으로 변환 (YYYYMMDDHHMM)
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const date = String(now.getDate()).padStart(2, '0');
-                const hour = String(now.getHours()).padStart(2, '0');
-                const tm = `${year}${month}${date}${hour}00`;
+                <div className="mb-3">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium">현재: {stage?.current?.stage}</span>
+                    <span className="text-sm text-gray-500">
+                      다음: {stage?.next?.stage} (D-{stage?.estimatedDaysToNext || '?'})
+                    </span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-4 mb-2">
+                    <div 
+                      className="bg-gradient-to-r from-green-400 to-green-600 h-4 rounded-full transition-all duration-1000 relative"
+                      style={{ width: `${Math.min(stage?.overallProgress || 0, 100)}%` }}
+                    >
+                      <div className="absolute inset-0 bg-white bg-opacity-30 rounded-full animate-pulse"></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>누적 GDD: {crop.gddAccumulated?.toFixed(0)}°C</span>
+                    <span>{stage?.overallProgress?.toFixed(1)}% 완료</span>
+                  </div>
+                </div>
                 
-                // 기상청 지상관측 API 호출
-                const kmaUrl = `https://apihub.kma.go.kr/api/typ01/url/kma_sfctm2.php?tm=${tm}&stn=0&help=0&authKey=${KMA_API_KEY}`;
+                {stage?.current?.tasks && (
+                  <div className="mb-3 p-3 bg-blue-50 rounded-lg">
+                    <div className="font-semibold text-blue-800 mb-2">
+                      📋 {stage?.current?.stage} 단계 권장작업
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {stage?.current?.tasks?.map((task, taskIdx) => (
+                        <span key={taskIdx} className="px-2 py-1 bg-blue-200 text-blue-700 rounded text-xs">
+                          {task}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
-                const response = await fetch(kmaUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`기상청 API HTTP 오류: ${response.status}`);
-                }
-                
-                const weatherText = await response.text();
-                
-                // 기상청 데이터 파싱 (CSV 형식)
-                const weatherData = parseKMAData(weatherText);
-                
-                if (weatherData && weatherData.length > 0) {
-                    // 서울 또는 가장 가까운 관측소 데이터 찾기
-                    const seoulData = findSeoulStationData(weatherData);
-                    
-                    if (seoulData) {
-                        const temp = parseFloat(seoulData.ta) || 22; // 기온
-                        const humidity = parseFloat(seoulData.hm) || 65; // 습도
-                        const windSpeed = parseFloat(seoulData.ws) || 0; // 풍속
-                        
-                        // 화면 업데이트
-                        document.getElementById('current-temp').textContent = `${Math.round(temp)}°C`;
-                        document.getElementById('humidity').textContent = `${Math.round(humidity)}%`;
-                        document.getElementById('user-greeting').textContent = '안녕하세요, 서울 농부님! 👋';
-                        
-                        // 기상청 데이터 기반 위험도 및 추천사항 업데이트
-                        updateKMABasedRisk(temp, humidity, windSpeed);
-                        updateKMABasedRecommendation(temp, humidity, windSpeed);
-                        updateSmartFarmData(temp, humidity);
-                        
-                        console.log(`✅ 기상청 실시간 데이터: ${Math.round(temp)}°C, ${Math.round(humidity)}%, 풍속 ${windSpeed}m/s`);
-                        return;
-                    }
-                }
-                
-                throw new Error('기상청 데이터 파싱 실패');
-                
-            } catch (error) {
-                console.log('기상청 API 호출 실패:', error.message);
-                throw error;
-            }
-        }
-
-        // 기상청 CSV 데이터 파싱
-        function parseKMAData(csvText) {
-            try {
-                const lines = csvText.trim().split('\n');
-                if (lines.length < 2) return null;
-                
-                const headers = lines[0].split(',').map(h => h.trim());
-                const dataLines = lines.slice(1);
-                
-                const weatherData = dataLines.map(line => {
-                    const values = line.split(',').map(v => v.trim());
-                    const dataObj = {};
-                    
-                    headers.forEach((header, index) => {
-                        dataObj[header] = values[index] || '';
-                    });
-                    
-                    return dataObj;
-                });
-                
-                return weatherData;
-                
-            } catch (error) {
-                console.log('기상청 데이터 파싱 오류:', error);
-                return null;
-            }
-        }
-
-        // 서울 관측소 데이터 찾기
-        function findSeoulStationData(weatherData) {
-            // 서울 관측소 코드들: 108(서울), 401(서울), 471(서울) 등
-            const seoulStations = ['108', '401', '471', '100', '101'];
-            
-            for (const station of seoulStations) {
-                const stationData = weatherData.find(data => 
-                    data.stn === station || data.STN === station
-                );
-                if (stationData && (stationData.ta || stationData.TA)) {
-                    return {
-                        ta: stationData.ta || stationData.TA, // 기온
-                        hm: stationData.hm || stationData.HM, // 습도
-                        ws: stationData.ws || stationData.WS, // 풍속
-                        wd: stationData.wd || stationData.WD  // 풍향
-                    };
-                }
-            }
-            
-            // 서울 데이터가 없으면 첫 번째 유효한 데이터 사용
-            return weatherData.find(data => 
-                (data.ta || data.TA) && parseFloat(data.ta || data.TA) > -50
+                {yieldInfo && (
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="font-semibold text-yellow-800 mb-2">🎯 AI 수확량 예측</div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <div className="text-yellow-700">
+                          예상 수확량: <span className="font-bold">{yieldInfo.predicted.toLocaleString()}{yieldInfo.unit}</span>
+                        </div>
+                        <div className="text-yellow-600">
+                          신뢰도: {yieldInfo.confidence}%
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs space-y-1">
+                          <div>날씨영향: {yieldInfo.factors.weather > 0 ? '+' : ''}{yieldInfo.factors.weather}%</div>
+                          <div>토양점수: {yieldInfo.factors.soil}점</div>
+                          <div>GDD달성: {yieldInfo.factors.gdd}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             );
-        }
+          })}
+        </div>
 
-        // OpenWeather API 백업 (기상청 API 실패시)
-        async function getOpenWeatherData() {
-            try {
-                const API_KEY = 'd4f8c7e6b2a5d9f3e1c8b7a4f6d2e9c5'; // OpenWeather API 키
-                
-                // 서울 좌표
-                const lat = 37.5665;
-                const lon = 126.9780;
-                
-                const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=kr`;
-                
-                const response = await fetch(weatherUrl);
-                
-                if (!response.ok) {
-                    throw new Error(`OpenWeather API HTTP 오류: ${response.status}`);
-                }
-                
-                const weatherData = await response.json();
-                
-                if (weatherData.cod === 200) {
-                    const temp = Math.round(weatherData.main.temp);
-                    const humidity = weatherData.main.humidity;
-                    const windSpeed = weatherData.wind?.speed || 0;
-                    const weatherDesc = weatherData.weather[0].description;
-                    
-                    document.getElementById('current-temp').textContent = `${temp}°C`;
-                    document.getElementById('humidity').textContent = `${humidity}%`;
-                    document.getElementById('user-greeting').textContent = '안녕하세요, 서울 농부님! 👋';
-                    
-                    updateKMABasedRisk(temp, humidity, windSpeed, weatherDesc);
-                    updateKMABasedRecommendation(temp, humidity, windSpeed, weatherDesc);
-                    updateSmartFarmData(temp, humidity);
-                    
-                    console.log(`✅ OpenWeather 백업 데이터: ${temp}°C, ${humidity}%, ${weatherDesc}`);
-                    return;
-                }
-                
-                throw new Error('OpenWeather 데이터 오류');
-                
-            } catch (error) {
-                console.log('OpenWeather API도 실패, 기본 데이터 사용:', error);
-                useRealisticDefaultWeather();
-            }
-        }
+        {/* K. 연속 기상 분석 위젯 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-xl flex items-center gap-2">
+              <CloudRain className="w-6 h-6 text-blue-600" />
+              연속 기상 분석
+            </h3>
+            <button 
+              onClick={() => setShowDetailedWeather(!showDetailedWeather)}
+              className="text-blue-600 hover:text-blue-800"
+            >
+              {showDetailedWeather ? '간단히' : '상세히'}
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="text-center p-3 bg-red-50 rounded-lg">
+              <Thermometer className="w-8 h-8 text-red-500 mx-auto mb-2" />
+              <div className="font-bold text-red-600">{weatherData.current?.temp?.toFixed(1)}°C</div>
+              <div className="text-xs text-red-500">체감 35°C</div>
+            </div>
+            <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <Droplets className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+              <div className="font-bold text-blue-600">{weatherData.current?.humidity?.toFixed(0)}%</div>
+              <div className="text-xs text-blue-500">습도</div>
+            </div>
+            <div className="text-center p-3 bg-green-50 rounded-lg">
+              <Wind className="w-8 h-8 text-green-500 mx-auto mb-2" />
+              <div className="font-bold text-green-600">{weatherData.current?.windSpeed?.toFixed(1)}m/s</div>
+              <div className="text-xs text-green-500">풍속</div>
+            </div>
+          </div>
+          
+          <div className="space-y-2 mb-4">
+            {weatherData.forecast?.slice(0, showDetailedWeather ? 7 : 3).map((day, idx) => (
+              <div key={idx} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 text-sm font-medium">{day.date}</div>
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    day.maxTemp >= 35 ? 'bg-red-100 text-red-700' :
+                    day.maxTemp >= 33 ? 'bg-orange-100 text-orange-700' : 
+                    'bg-green-100 text-green-700'
+                  }`}>
+                    {day.condition}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1">
+                    <Thermometer className="w-4 h-4 text-red-500" />
+                    <span className="font-semibold">{day.maxTemp.toFixed(0)}°</span>
+                    <span className="text-gray-500">/{day.minTemp.toFixed(0)}°</span>
+                  </div>
+                  {day.rainfall > 0 && (
+                    <div className="flex items-center gap-1">
+                      <CloudRain className="w-4 h-4 text-blue-500" />
+                      <span className="text-blue-600 text-xs">{day.rainfall.toFixed(1)}mm</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+            <div className="font-semibold text-orange-800 mb-2">⚠️ 기상 위험 요약</div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="text-orange-700">연속 고온: 4일째</div>
+              <div className="text-blue-700">무강수: 3일째</div>
+              <div className="text-red-700">폭염 예상: 내일</div>
+              <div className="text-green-700">바람: 약함</div>
+            </div>
+          </div>
+        </div>
 
-        // 기상청 데이터 기반 농업 위험도 평가
-        function updateKMABasedRisk(temp, humidity, windSpeed, weather = '') {
-            const riskIndicator = document.getElementById('risk-indicator');
+        {/* L. 스마트팜 자동제어 현황 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
+            <Zap className="w-6 h-6 text-yellow-600" />
+            AI 스마트팜 자동제어
+          </h3>
+          
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Database className="w-5 h-5 text-blue-600" />
+                <span className="font-medium text-blue-800">토양 센서</span>
+              </div>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span>습도:</span>
+                  <span className="font-bold text-blue-600">{sensors.soilMoisture?.toFixed(0)}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>온도:</span>
+                  <span className="font-bold text-blue-600">{sensors.soilTemp?.toFixed(1)}°C</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>pH:</span>
+                  <span className="font-bold text-blue-600">{sensors.ph?.toFixed(1)}</span>
+                </div>
+              </div>
+            </div>
             
-            // 농업 위험도 판단 기준 (기상청 기준)
-            if (temp >= 35 || temp <= -5) {
-                riskIndicator.className = 'risk-indicator risk-high';
-                riskIndicator.innerHTML = '🚨 농작업 중단 권고 - 극한 기온';
-            }
-            else if (windSpeed >= 14) { // 강풍주의보 기준
-                riskIndicator.className = 'risk-indicator risk-high';
-                riskIndicator.innerHTML = '💨 농작업 위험 - 강풍주의보 수준';
-            }
-            else if (temp >= 33 || temp <= 0 || windSpeed >= 10) {
-                riskIndicator.className = 'risk-indicator risk-medium';
-                riskIndicator.innerHTML = `⚠️ 농작업 주의 - ${Math.round(temp)}°C, 풍속 ${windSpeed.toFixed(1)}m/s`;
-            }
-            else if (humidity >= 90) {
-                riskIndicator.className = 'risk-indicator risk-medium';
-                riskIndicator.innerHTML = `💧 병해충 주의 - 습도 ${Math.round(humidity)}%`;
-            }
-            else if (temp >= 8 && temp <= 28 && humidity <= 80 && windSpeed < 8) {
-                riskIndicator.className = 'risk-indicator risk-low';
-                riskIndicator.innerHTML = '✅ 농작업 적합 조건';
-            }
-            else {
-                riskIndicator.className = 'risk-indicator risk-medium';
-                riskIndicator.innerHTML = `📊 현재 기상: ${Math.round(temp)}°C, 습도 ${Math.round(humidity)}%`;
-            }
-        }
+            <div className="p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="w-5 h-5 text-green-600" />
+                <span className="font-medium text-green-800">환경 센서</span>
+              </div>
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span>CO2:</span>
+                  <span className="font-bold text-green-600">{sensors.co2?.toFixed(0)}ppm</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>조도:</span>
+                  <span className="font-bold text-green-600">{(sensors.lightIntensity/1000)?.toFixed(0)}klx</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>잎습윤:</span>
+                  <span className="font-bold text-green-600">{sensors.leafWetness?.toFixed(1)}h</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            {devices.slice(0, 3).map((device, idx) => (
+              <div key={idx} className="p-3 border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    {device.type === 'irrigation' && <Droplets className="w-5 h-5 text-blue-600" />}
+                    {device.type === 'ventilation' && <Wind className="w-5 h-5 text-green-600" />}
+                    {device.type === 'lighting' && <Sun className="w-5 h-5 text-yellow-600" />}
+                    <div>
+                      <div className="font-medium">{device.name || `${device.type} 시스템`}</div>
+                      <div className="text-xs text-gray-500">마지막 작동: {device.lastAction || '10분 전'}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Battery className="w-4 h-4 text-gray-500" />
+                      <span className="text-xs">{device.battery || 88}%</span>
+                    </div>
+                    <div className={`w-3 h-3 rounded-full ${
+                      device.status === 'active' ? 'bg-green-400' :
+                      device.status === 'standby' ? 'bg-yellow-400' : 'bg-gray-400'
+                    }`} />
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600">
+                  자동모드: {device.autoMode ? '🟢 ON' : '🔴 OFF'} | 
+                  상태: {device.status === 'active' ? '가동중' : device.status === 'standby' ? '대기중' : '오프라인'}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="font-semibold text-yellow-800 mb-2">🤖 활성화된 자동화 룰</div>
+            <div className="space-y-1 text-sm">
+              {automationRules.filter(rule => rule.enabled).map((rule, idx) => (
+                <div key={idx} className="flex items-center justify-between">
+                  <span className="text-yellow-700">• {rule.name}</span>
+                  <span className="text-green-600 font-medium">✓ 활성</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
 
-        // 기상청 데이터 기반 농작업 추천
-        function updateKMABasedRecommendation(temp, humidity, windSpeed, weather = '') {
-            const recommendation = document.getElementById('weather-recommendation');
+        {/* M. 오늘의 추천 작업 (AI 기반) */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
+            <Target className="w-6 h-6 text-purple-600" />
+            AI 추천 작업 리스트
+          </h3>
+          
+          <div className="space-y-3">
+            <div className="p-4 bg-red-50 border-l-4 border-red-400 rounded-lg" 
+                 onClick={() => voiceEnabled && speakText('긴급 관수 작업이 필요합니다')}>
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <Bell className="w-6 h-6 text-red-600 animate-bounce" />
+                  <div>
+                    <div className="font-bold text-red-800">긴급: 오전 관수 필수</div>
+                    <div className="text-sm text-red-600">토양습도 {sensors.soilMoisture?.toFixed(0)}%, 임계점 도달</div>
+                  </div>
+                </div>
+                <span className="px-3 py-1 bg-red-500 text-white rounded-full text-xs font-bold">
+                  D-0
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <div className="text-red-700">예상 소요시간: 2시간</div>
+                  <div className="text-red-600">적정 시간: 오전 6-10시</div>
+                </div>
+                <div>
+                  <div className="text-red-700">필요 급수량: 1,200L</div>
+                  <div className="text-red-600">자동제어: 대기중</div>
+                </div>
+              </div>
+            </div>
             
-            let message = '';
+            <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-lg">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <Bug className="w-6 h-6 text-orange-600" />
+                  <div>
+                    <div className="font-bold text-orange-800">병해충 예방 방제</div>
+                    <div className="text-sm text-orange-600">AI 분석: 벼멸구 발생 위험 85%</div>
+                  </div>
+                </div>
+                <span className="px-3 py-1 bg-orange-500 text-white rounded-full text-xs font-bold">
+                  D-2
+                </span>
+              </div>
+              <div className="text-xs text-orange-700 space-y-1">
+                <div>• 권장 약제: 이미다클로프리드 1000배 희석</div>
+                <div>• 살포 면적: 3,000평 (1구역 논)</div>
+                <div>• 예상 비용: 150,000원</div>
+              </div>
+            </div>
             
-            if (temp >= 35) {
-                message = '🌞 폭염경보: 농작업 중단, 새벽 4-6시만 제한적 작업';
-            }
-            else if (temp >= 33) {
-                message = '🌡️ 폭염주의: 오전 6-9시, 저녁 6시 이후 작업 권장';
-            }
-            else if (temp <= 0) {
-                message = '🧊 빙점 이하: 서리 피해 방지 및 보온 시설 점검';
-            }
-            else if (temp <= 5) {
-                message = '❄️ 저온주의: 월동 작물 보온 및 동파 방지 조치';
-            }
-            else if (windSpeed >= 14) {
-                message = '💨 강풍주의: 시설물 고정 및 실내 작업 전환';
-            }
-            else if (windSpeed >= 10) {
-                message = '🌪️ 바람 주의: 방풍망 점검 및 지주 보강';
-            }
-            else if (humidity >= 90) {
-                message = '💧 다습경보: 통풍 확보 및 병해충 예찰 강화';
-            }
-            else if (humidity >= 80) {
-                message = '🌫️ 습도 높음: 곰팡이병 예방 및 환기 관리';
-            }
-            else if (temp >= 15 && temp <= 25 && humidity <= 70 && windSpeed < 5) {
-                message = '🌱 최적 조건: 파종, 정식, 방제 등 모든 농작업 적합';
-            }
-            else if (temp >= 10 && temp <= 30 && windSpeed < 8) {
-                message = '📋 작업 적합: 대부분의 농작업 가능, 수분 관리 주의';
-            }
-            else {
-                message = '🔍 기상 주의: 작업 전 상세 기상 정보 재확인 필요';
-            }
-            
-            recommendation.textContent = message;
-        }
+            <div className="p-4 bg-blue-50 border-l-4 border-blue-400 rounded-lg">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <Eye className="w-6 h-6 text-blue-600" />
+                  <div>
+                    <div className="font-bold text-blue-800">벼 수잉기 생육 점검</div>
+                    <div className="text-sm text-blue-600">GDD 890°C 달성, 이삭 형성 확인</div>
+                  </div>
+                </div>
+                <span className="px-3 py-1 bg-blue-500 text-white rounded-full text-xs font-bold">
+                  D-5
+                </span>
+              </div>
+              <div className="text-xs text-blue-700 space-y-1">
+                <div>• 점검 항목: 이삭 길이, 알 형성 상태</div>
+                <div>• 소요시간: 1시간</div>
+                <div>• 기록 필요: 생육 단계별 사진</div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="font-semibold text-green-800 mb-2">✅ 오늘 완료된 작업</div>
+            <div className="space-y-1 text-sm text-green-700">
+              <div>• 논 물 깊이 조절 (오전 7시)</div>
+              <div>• 제초제 살포 (오전 9시)</div>
+              <div>• 센서 데이터 점검 (오전 11시)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
-        // 현실적인 기본 날씨 (모든 API 실패시)
-        function useRealisticDefaultWeather() {
-            const now = new Date();
-            const hour = now.getHours();
-            const month = now.getMonth() + 1;
-            
-            // 9월 서울 평균 기온 (기상청 평년값 기준)
-            let temp = 22;
-            
-            // 시간대별 기온 변화
-            if (hour >= 6 && hour <= 8) temp = 18; // 새벽
-            else if (hour >= 14 && hour <= 16) temp = 26; // 오후 최고
-            else if (hour >= 22 || hour <= 5) temp = 16; // 밤
-            
-            const humidity = 65;
-            const windSpeed = 2.5;
-            
-            document.getElementById('current-temp').textContent = `${temp}°C`;
-            document.getElementById('humidity').textContent = `${humidity}%`;
-            document.getElementById('user-greeting').textContent = '안녕하세요, 서울 농부님! 👋';
-            
-            updateKMABasedRisk(temp, humidity, windSpeed);
-            updateKMABasedRecommendation(temp, humidity, windSpeed);
-            updateSmartFarmData(temp, humidity);
-            
-            console.log(`📊 기본 날씨 데이터 사용: ${temp}°C, ${humidity}%`);
-        }
-
-        // 스마트팜 센서 데이터 업데이트 (실제 날씨 연동)
-        function updateSmartFarmData(airTemp, airHumidity) {
-            // 토양 온도 (기온보다 3-5도 낮음, 변화 폭 작음)
-            const soilTemp = Math.round(airTemp - 4 + Math.random() * 2);
-            
-            // 토양 습도 (대기 습도보다 안정적)
-            const soilMoisture = Math.round(Math.max(30, Math.min(85, airHumidity - 5 + Math.random() * 20)));
-            
-            // 토양 pH (6.0-7.5 범위, 계절별 변화)
-            const phLevel = (6.2 + Math.random() * 1.0).toFixed(1);
-            
-            document.getElementById('soil-temp').textContent = `${soilTemp}°C`;
-            document.getElementById('soil-moisture').textContent = `${soilMoisture}%`;
-            document.getElementById('ph-level').textContent = phLevel;
-        }
-
-        // 달력 생성 함수
-        function generateCalendar(year, monthIndex) {
-            const calendar = document.getElementById('calendar-grid');
-            if (!calendar) return;
-
-            const month = monthIndex + 1;
-            const firstDay = new Date(year, monthIndex, 1);
-            const lastDay = new Date(year, monthIndex + 1, 0);
-            const today = new Date();
-            
-            let html = '';
-            
-            // 이전 달의 빈 칸
-            for (let i = 0; i < firstDay.getDay(); i++) {
-                html += '<div class="calendar-day"></div>';
-            }
-            
-            // 현재 달의 날짜들
-            for (let date = 1; date <= lastDay.getDate(); date++) {
-                const isToday = today.getFullYear() === year && 
-                               today.getMonth() === monthIndex && 
-                               today.getDate() === date;
-                
-                const isSeason = (month === 9 && date === 7) || (month === 9 && date === 22);
-                
-                const className = isToday ? 'calendar-day today' : 
-                                 isSeason ? 'calendar-day season' : 'calendar-day';
-                
-                html += `<div class="${className}" onclick="handleCalendarClick(${date})">${date}</div>`;
-            }
-            
-            calendar.innerHTML = html;
-        }
-
-        // 작업 클릭 이벤트
-        function handleTaskClick(taskTitle) {
-            if (confirm(`📋 ${taskTitle}\n\n작업을 완료하시겠습니까?`)) {
-                alert('✅ 작업이 완료 처리되었습니다!');
-            }
-        }
-
-        // 달력 날짜 클릭 이벤트
-        function handleCalendarClick(date) {
-            const schedules = {
-                7: '📅 9월 7일 - 백로\n전통적으로 가을이 시작되는 날입니다.',
-                22: '📅 9월 22일 - 추분\n낮과 밤의 길이가 같아지는 날'
-            };
-            
-            const schedule = schedules[date] || `📅 9월 ${date}일\n특별한 농업 일정이 없습니다.`;
-            alert(schedule);
-        }
-
-        // 설정 함수들
-        function updateUserName(name) {
-            appState.user.name = name;
-            document.getElementById('user-greeting').textContent = `안녕하세요, ${appState.user.region} ${name}님! 👋`;
-        }
-
-        function updateRegion(region) {
-            appState.user.region = region;
-            document.getElementById('user-greeting').textContent = `안녕하세요, ${region} ${appState.user.name}님! 👋`;
-        }
-
-        function changeFontSize(size) {
-            appState.fontSize = size;
-            document.body.className = document.body.className.replace(/font-\w+/g, '');
-            document.body.classList.add(`font-${size}`);
-            
-            // 버튼 활성화 상태 변경
-            document.querySelectorAll('.font-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`button[onclick="changeFontSize('${size}')"]`).classList.add('active');
-            
-            alert(`글씨 크기가 ${size === 'small' ? '작게' : size === 'large' ? '크게' : size === 'xlarge' ? '매우 크게' : '보통으로'} 변경되었습니다`);
-        }
-
-        function changeTheme(theme) {
-            appState.theme = theme;
-            document.body.className = document.body.className.replace(/theme-\w+/g, '');
-            if (theme !== 'light') {
-                document.body.classList.add(`theme-${theme}`);
-            }
-            
-            // 버튼 활성화 상태 변경
-            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`button[onclick="changeTheme('${theme}')"]`).classList.add('active');
-            
-            alert(`${theme === 'light' ? '밝은' : '어두운'} 테마로 변경되었습니다`);
-        }
-
-        // 절기 업데이트 함수
-        function updateSeasonData(now) {
-            const seasons2024 = [
-                { name: '소한', month: 1, date: 6 }, { name: '대한', month: 1, date: 20 },
-                { name: '입춘', month: 2, date: 4 }, { name: '우수', month: 2, date: 19 },
-                { name: '경칩', month: 3, date: 5 }, { name: '춘분', month: 3, date: 20 },
-                { name: '청명', month: 4, date: 4 }, { name: '곡우', month: 4, date: 20 },
-                { name: '입하', month: 5, date: 5 }, { name: '소만', month: 5, date: 20 },
-                { name: '망종', month: 6, date: 5 }, { name: '하지', month: 6, date: 21 },
-                { name: '소서', month: 7, date: 7 }, { name: '대서', month: 7, date: 22 },
-                { name: '입추', month: 8, date: 7 }, { name: '처서', month: 8, date: 23 },
-                { name: '백로', month: 9, date: 7 }, { name: '추분', month: 9, date: 22 },
-                { name: '한로', month: 10, date: 8 }, { name: '상강', month: 10, date: 23 },
-                { name: '입동', month: 11, date: 7 }, { name: '소설', month: 11, date: 22 },
-                { name: '대설', month: 12, date: 7 }, { name: '동지', month: 12, date: 21 }
-            ];
-
-            const month = now.getMonth() + 1;
-            const date = now.getDate();
-            
-            let currentSeason = seasons2024[16]; // 기본값: 백로
-            for (let i = 0; i < seasons2024.length; i++) {
-                const season = seasons2024[i];
-                if (month < season.month || (month === season.month && date < season.date)) {
-                    break;
-                }
-                currentSeason = season;
-            }
-
-            document.getElementById('traditional-season').textContent = currentSeason.name;
-            document.getElementById('traditional-date').textContent = `${currentSeason.month}월 ${currentSeason.date}일`;
-            document.getElementById('living-season').textContent = `생활${currentSeason.name}`;
-            document.getElementById('living-date').textContent = `${currentSeason.month}월 ${currentSeason.date + 3}일`;
-        }
-
-        // 페이지 로드 시 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🌾 농번기 앱 시작!');
-            updateRealData();
-            
-            // 1시간마다 데이터 자동 업데이트
-            setInterval(updateRealData, 60 * 60 * 1000);
+  // 초기 데이터 로드
+  useEffect(() => {
+    const initializeApp = async () => {
+      setIsLoading(true);
+      
+      try {
+        setUserProfile({
+          id: 'user001',
+          name: '김농부',
+          experience: 15,
+          age: 55,
+          location: '공주시 유구읍',
+          speciality: '벼농사',
+          farmSize: 5000,
+          membershipLevel: 'premium',
+          cropsGrown: ['벼', '배추', '토마토'],
+          achievements: ['우수농가상', '친환경인증'],
+          points: 3450,
+          level: 'Gold'
         });
-    </script>
-</body>
-</html>
+
+        setFarmData({
+          totalArea: 5000,
+          fields: [
+            {
+              id: 'field001',
+              name: '1구역 논',
+              crop: 'rice',
+              variety: '추청',
+              area: 3000,
+              coordinates: { lat: 36.4645, lng: 127.1204 },
+              plantingDate: '2024-05-15',
+              expectedHarvest: '2024-10-15'
+            },
+            {
+              id: 'field002', 
+              name: '2구역 밭',
+              crop: 'cabbage',
+              variety: '불암3호',
+              area: 1500,
+              coordinates: { lat: 36.4650, lng: 127.1210 },
+              plantingDate: '2024-08-01',
+              expectedHarvest: '2024-11-01'
+            }
+          ]
+        });
+
+        const history = [];
+        for (let i = 89; i >= 0; i--) {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          
+          history.push({
+            date: date.toISOString().split('T')[0],
+            maxTemp: 28 + Math.sin((date.getTime() / (1000 * 60 * 60 * 24)) * 0.1) * 8 + Math.random() * 6,
+            minTemp: 18 + Math.sin((date.getTime() / (1000 * 60 * 60 * 24)) * 0.1) * 6 + Math.random() * 4,
+            avgTemp: 23 + Math.sin((date.getTime() / (1000 * 60 * 60 * 24)) * 0.1) * 7 + Math.random() * 3,
+            rainfall: Math.random() > 0.7 ? Math.random() * 25 : 0,
+            humidity: 65 + Math.random() * 25,
+            windSpeed: 3 + Math.random() * 8
+          });
+        }
+        setWeatherHistory(history);
+
+        const today = history[history.length - 1];
+        setWeatherData({
+          current: {
+            temp: today.avgTemp,
+            maxTemp: today.maxTemp,
+            minTemp: today.minTemp,
+            humidity: today.humidity,
+            windSpeed: today.windSpeed,
+            rainfall: today.rainfall
+          },
+          forecast: [
+            { date: '오늘', maxTemp: 34, minTemp: 22, condition: '맑음', rainfall: 0 },
+            { date: '내일', maxTemp: 36, minTemp: 24, condition: '폭염', rainfall: 0 },
+            { date: '모레', maxTemp: 32, minTemp: 20, condition: '구름', rainfall: 2 },
+            { date: '3일 후', maxTemp: 29, minTemp: 18, condition: '소나기', rainfall: 15 }
+          ]
+        });
+
+        const cropsData = farmData.fields.map(field => {
+          const gdd = calculateAccumulatedGDD(field.plantingDate, history, CROP_DATABASE[field.crop]?.baseTemp || 10);
+          const growthInfo = trackCropGrowthStage(field.crop, field.plantingDate, gdd, history);
+          
+          return {
+            id: field.id,
+            fieldId: field.id,
+            name: CROP_DATABASE[field.crop]?.name || field.crop,
+            type: field.crop,
+            variety: field.variety,
+            area: field.area,
+            plantingDate: field.plantingDate,
+            gddAccumulated: gdd,
+            growthStage: growthInfo,
+            healthStatus: Math.random() > 0.7 ? 'warning' : 'good'
+          };
+        });
+        setCrops(cropsData);
+
+        const currentDate = new Date();
+        const seasons = calculateLivingSeason('공주시', currentDate, history);
+        setLivingSeasons(seasons);
+
+        const predictions = {};
+        cropsData.forEach(crop => {
+          predictions[crop.id] = YieldPredictionAI.calculateAdvancedYield(
+            {
+              cropType: crop.type,
+              plantingDate: crop.plantingDate,
+              area: crop.area,
+              variety: crop.variety,
+              gddAccumulated: crop.gddAccumulated
+            },
+            history,
+            { ph: 6.2, nitrogen: 120, phosphorus: 65, potassium: 180, moisture: 65 },
+            []
+          );
+        });
+        setYieldPredictions(predictions);
+
+        const risks = analyzeWeatherRisks(history, []);
+        setAlerts(risks);
+
+        setDevices([
+          {
+            id: 1, name: '1구역 관수시스템', type: 'irrigation',
+            status: 'active', lastAction: '2분 전 자동 가동',
+            autoMode: true, battery: 85
+          },
+          {
+            id: 2, name: '온실 환기시스템', type: 'ventilation',
+            status: 'standby', lastAction: '30분 전 환기 완료',
+            autoMode: true, battery: 92
+          }
+        ]);
+
+        setAutomationRules([
+          {
+            id: 'rule001',
+            name: '토양습도 기반 자동관수',
+            enabled: true
+          },
+          {
+            id: 'rule002', 
+            name: '고온 시 자동환기',
+            enabled: true
+          }
+        ]);
+
+        await updateSensorData();
+        setIsLoading(false);
+        
+      } catch (error) {
+        console.error('앱 초기화 오류:', error);
+        setIsLoading(false);
+      }
+    };
+
+    initializeApp();
+  }, [updateSensorData]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isOffline) {
+        updateSensorData();
+      }
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [isOffline, updateSensorData]);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-green-600 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <h2 className="text-xl font-bold mb-2">농장 데이터 로딩 중...</h2>
+          <p className="opacity-80">센서 연결 및 데이터 분석 중</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-green-600 text-white p-4 sticky top-0 z-50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Leaf className="w-8 h-8" />
+            <div>
+              <h1 className="text-xl font-bold">스마트 생활절기</h1>
+              <p className="text-xs opacity-90">AI 농업 통합 플랫폼</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {isOffline ? (
+              <WifiOff className="w-5 h-5 text-red-300" />
+            ) : (
+              <Wifi className="w-5 h-5 text-green-300" />
+            )}
+            
+            <button 
+              onClick={() => setVoiceEnabled(!voiceEnabled)}
+              className={`p-2 rounded ${voiceEnabled ? 'bg-green-500' : 'bg-green-700'}`}
+            >
+              <Volume2 className="w-5 h-5" />
+            </button>
+            
+            <button className="relative">
+              <Bell className="w-5 h-5" />
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {notifications.length}
+                </span>
+              )}
+            </button>
+            
+            <div className="text-xs text-center">
+              <div>{userProfile.level}</div>
+              <div className="text-yellow-200">{userProfile.points}P</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="pb-20">
+        {currentScreen === 'home' && <MainHomeScreen />}
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
+        <div className="flex justify-around">
+          <button
+            onClick={() => setCurrentScreen('home')}
+            className={`flex flex-col items-center p-2 ${
+              currentScreen === 'home' ? 'text-green-600' : 'text-gray-500'
+            }`}
+          >
+            <Clock className="w-6 h-6" />
+            <span className="text-xs mt-1">홈</span>
+          </button>
+          <button className="flex flex-col items-center p-2 text-gray-400">
+            <Calendar className="w-6 h-6" />
+            <span className="text-xs mt-1">절기달력</span>
+          </button>
+          <button className="flex flex-col items-center p-2 text-gray-400">
+            <Map className="w-6 h-6" />
+            <span className="text-xs mt-1">농장관리</span>
+          </button>
+          <button className="flex flex-col items-center p-2 text-gray-400">
+            <Users className="w-6 h-6" />
+            <span className="text-xs mt-1">커뮤니티</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CompleteFarmingApp;
+// 1부에서 이어받는 컴포넌트들과 상태들...
+// N. 실시간 알림 및 커뮤니케이션 허브 (1부 홈화면에 추가)
+
+// O. 절기 달력 화면 컴포넌트
+const SeasonCalendarScreen = ({ 
+  livingSeasons, 
+  weatherHistory, 
+  crops, 
+  voiceEnabled, 
+  speakText 
+}) => {
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [viewMode, setViewMode] = useState('combined');
+
+  const seasonalCalendar = {
+    2: { traditional: '입춘(2/4), 우수(2/19)', living: '실질입춘(2/7), 실질우수(2/21)' },
+    3: { traditional: '경칩(3/5), 춘분(3/20)', living: '실질경칩(3/8), 실질춘분(3/23)' },
+    4: { traditional: '청명(4/4), 곡우(4/20)', living: '실질청명(4/7), 실질곡우(4/23)' },
+    5: { traditional: '입하(5/5), 소만(5/21)', living: '실질입하(5/8), 실질소만(5/24)' },
+    6: { traditional: '망종(6/5), 하지(6/21)', living: '실질망종(6/8), 실질하지(6/24)' },
+    7: { traditional: '소서(7/7), 대서(7/22)', living: '실질소서(7/10), 실질대서(7/25)' },
+    8: { traditional: '입추(8/7), 처서(8/23)', living: '실질입추(8/10), 실질처서(8/26)' },
+    9: { traditional: '백로(9/7), 추분(9/22)', living: '실질백로(9/10), 실질추분(9/25)' },
+    10: { traditional: '한로(10/8), 상강(10/23)', living: '실질한로(10/11), 실질상강(10/26)' },
+    11: { traditional: '입동(11/7), 소설(11/22)', living: '실질입동(11/10), 실질소설(11/25)' }
+  };
+
+  const cropCalendar = {
+    rice: {
+      2: '종자 준비, 농기계 점검',
+      3: '파종상 준비, 상토 혼합',
+      4: '파종, 육묘 관리',
+      5: '이앙, 물 관리',
+      6: '제초, 추비 시용',
+      7: '물 관리, 병해충 방제',
+      8: '수잉기 관리, 이삭 관찰',
+      9: '출수기 관리, 수분 조절',
+      10: '성숙기 관리, 수확 준비',
+      11: '수확, 건조'
+    },
+    cabbage: {
+      3: '봄배추 파종',
+      4: '정식, 물주기',
+      5: '웃거름, 병해충 방제',
+      8: '가을배추 파종',
+      9: '정식, 초기 관리',
+      10: '결구기 관리',
+      11: '수확'
+    }
+  };
+
+  return (
+    <div className="p-4 space-y-6 pb-24">
+      {/* O-1. 달력 헤더 및 뷰 모드 선택 */}
+      <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl p-5">
+        <h2 className="text-2xl font-bold mb-4">📅 2024년 생활절기 달력</h2>
+        
+        <div className="flex gap-2 mb-4">
+          {[
+            { key: 'traditional', label: '전통절기', icon: '🏛️' },
+            { key: 'living', label: '생활절기', icon: '🌡️' },
+            { key: 'combined', label: '통합뷰', icon: '📊' }
+          ].map(mode => (
+            <button
+              key={mode.key}
+              onClick={() => setViewMode(mode.key)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                viewMode === mode.key
+                  ? 'bg-white text-green-600'
+                  : 'bg-white bg-opacity-20 text-white hover:bg-opacity-30'
+              }`}
+            >
+              {mode.icon} {mode.label}
+            </button>
+          ))}
+        </div>
+        
+        <div className="flex gap-2 overflow-x-auto">
+          {Array.from({length: 12}, (_, i) => i).map(month => (
+            <button
+              key={month}
+              onClick={() => setSelectedMonth(month)}
+              className={`px-3 py-2 rounded-lg text-sm whitespace-nowrap transition-colors ${
+                selectedMonth === month
+                  ? 'bg-white text-green-600 font-bold'
+                  : 'bg-white bg-opacity-20 text-white hover:bg-opacity-30'
+              }`}
+            >
+              {month + 1}월
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* O-2. 현재 절기 상태 */}
+      <div className="bg-white rounded-xl shadow-lg p-5">
+        <h3 className="font-bold text-lg mb-4">🌟 현재 절기 상세 정보</h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="text-2xl">🏛️</div>
+              <div>
+                <div className="font-bold text-green-800">전통절기</div>
+                <div className="text-sm text-green-600">음력 기준 고정</div>
+              </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b">
+                    <th className="px-4 py-3 text-left font-medium">센서 항목</th>
+                    <th className="px-4 py-3 text-center font-medium">현재값</th>
+                    <th className="px-4 py-3 text-center font-medium">최적범위</th>
+                    <th className="px-4 py-3 text-center font-medium">상태</th>
+                    <th className="px-4 py-3 text-center font-medium">최근 변화</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {[
+                    { name: '토양 온도', value: sensors.soilTemp?.toFixed(1) + '°C', optimal: '20-28°C', status: 'good', change: '+0.5°C' },
+                    { name: '질소 (N)', value: sensors.nitrogen?.toFixed(0) + 'ppm', optimal: '100-150ppm', status: 'good', change: '-5ppm' },
+                    { name: '인산 (P)', value: sensors.phosphorus?.toFixed(0) + 'ppm', optimal: '50-80ppm', status: 'good', change: '+2ppm' },
+                    { name: '칼륨 (K)', value: sensors.potassium?.toFixed(0) + 'ppm', optimal: '150-200ppm', status: 'good', change: '+8ppm' },
+                    { name: 'CO2', value: sensors.co2?.toFixed(0) + 'ppm', optimal: '350-450ppm', status: 'good', change: '+15ppm' },
+                    { name: '풍속', value: sensors.windSpeed?.toFixed(1) + 'm/s', optimal: '2-8m/s', status: 'good', change: '-0.3m/s' },
+                    { name: '잎 습윤도', value: sensors.leafWetness?.toFixed(1) + 'h', optimal: '<4h', status: sensors.leafWetness > 4 ? 'warning' : 'good', change: '+1.2h' }
+                  ].map((item, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium">{item.name}</td>
+                      <td className="px-4 py-3 text-center font-bold">{item.value}</td>
+                      <td className="px-4 py-3 text-center text-gray-600">{item.optimal}</td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          item.status === 'good' ? 'bg-green-100 text-green-700' :
+                          item.status === 'warning' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {item.status === 'good' ? '정상' : item.status === 'warning' ? '주의' : '위험'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center text-gray-600">{item.change}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-lg p-5">
+            <h3 className="font-bold text-lg mb-4">📈 24시간 센서 트렌드</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="font-medium mb-3">온도 변화</div>
+                <div className="bg-red-50 rounded-lg p-4 h-32 flex items-end gap-1">
+                  {Array.from({length: 24}, (_, i) => (
+                    <div
+                      key={i}
+                      className="bg-red-400 rounded-t min-w-[8px] flex-1 transition-all duration-300 hover:bg-red-500"
+                      style={{ 
+                        height: `${20 + Math.sin(i * 0.5) * 15 + Math.random() * 10}%` 
+                      }}
+                      title={`${i}시: ${(25 + Math.sin(i * 0.5) * 8).toFixed(1)}°C`}
+                    ></div>
+                  ))}
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0시</span>
+                  <span>12시</span>
+                  <span>24시</span>
+                </div>
+              </div>
+              
+              <div>
+                <div className="font-medium mb-3">습도 변화</div>
+                <div className="bg-blue-50 rounded-lg p-4 h-32 flex items-end gap-1">
+                  {Array.from({length: 24}, (_, i) => (
+                    <div
+                      key={i}
+                      className="bg-blue-400 rounded-t min-w-[8px] flex-1 transition-all duration-300 hover:bg-blue-500"
+                      style={{ 
+                        height: `${40 + Math.sin(i * 0.3) * 20 + Math.random() * 15}%` 
+                      }}
+                      title={`${i}시: ${(60 + Math.sin(i * 0.3) * 25).toFixed(0)}%`}
+                    ></div>
+                  ))}
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0시</span>
+                  <span>12시</span>
+                  <span>24시</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* P-4. 장비 제어 탭 */}
+      {activeTab === 'devices' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl shadow-lg p-5">
+            <h3 className="font-bold text-lg mb-4">🎛️ 스마트팜 장비 제어</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-4 border border-blue-200 rounded-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">💧</div>
+                    <div>
+                      <div className="font-bold text-blue-800">자동 관수 시스템</div>
+                      <div className="text-sm text-gray-600">1,2,3구역 통합 제어</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-green-600">가동중</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between text-sm">
+                    <span>현재 출력:</span>
+                    <span className="font-bold">75% (1,200L/h)</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>가동 시간:</span>
+                    <span className="font-bold">2시간 35분</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>오늘 사용량:</span>
+                    <span className="font-bold">3,840L</span>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 rounded p-3 mb-4">
+                  <div className="font-medium text-blue-800 mb-2">🤖 AI 자동 제어</div>
+                  <div className="text-sm text-blue-700 space-y-1">
+                    <div>• 토양습도 45% → 목표 65%</div>
+                    <div>• 예상 완료: 45분 후</div>
+                    <div>• 다음 스케줄: 오후 6시</div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <button className="flex-1 py-2 bg-blue-600 text-white rounded text-sm font-medium">
+                    수동 제어
+                  </button>
+                  <button className="flex-1 py-2 bg-gray-200 text-gray-700 rounded text-sm font-medium">
+                    일시 중지
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4 border border-green-200 rounded-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">🌬️</div>
+                    <div>
+                      <div className="font-bold text-green-800">스마트 환기 시스템</div>
+                      <div className="text-sm text-gray-600">온실 자동 환기</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                    <span className="text-sm text-yellow-600">대기중</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between text-sm">
+                    <span>온실 온도:</span>
+                    <span className="font-bold">{(sensors.airTemp + 2)?.toFixed(1)}°C</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>환기창 개방:</span>
+                    <span className="font-bold">35%</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>팬 가동률:</span>
+                    <span className="font-bold">0% (대기)</span>
+                  </div>
+                </div>
+                
+                <div className="bg-green-50 rounded p-3 mb-4">
+                  <div className="font-medium text-green-800 mb-2">⚙️ 자동 설정</div>
+                  <div className="text-sm text-green-700 space-y-1">
+                    <div>• 작동 온도: 28°C 이상</div>
+                    <div>• 현재 온도: {(sensors.airTemp + 2)?.toFixed(1)}°C</div>
+                    <div>• 상태: 임계점 근접</div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2">
+                  <button className="flex-1 py-2 bg-green-600 text-white rounded text-sm font-medium">
+                    즉시 환기
+                  </button>
+                  <button className="flex-1 py-2 bg-gray-200 text-gray-700 rounded text-sm font-medium">
+                    설정 변경
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* P-5. AI 분석 탭 */}
+      {activeTab === 'analysis' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl shadow-lg p-5">
+            <h3 className="font-bold text-lg mb-4">🏥 농장 종합 건강도 분석</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
+                <div className="text-4xl font-bold text-green-600 mb-2">89점</div>
+                <div className="text-green-800 font-medium">전체 건강도</div>
+                <div className="text-sm text-green-600 mt-1">매우 양호</div>
+                
+                <div className="mt-4 relative w-16 h-16 mx-auto">
+                  <div className="absolute inset-0 rounded-full border-4 border-green-200"></div>
+                  <div className="absolute inset-0 rounded-full border-4 border-green-500 border-t-transparent transform -rotate-90"></div>
+                </div>
+              </div>
+              
+              <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl">
+                <div className="text-4xl font-bold text-blue-600 mb-2">92점</div>
+                <div className="text-blue-800 font-medium">작물 성장도</div>
+                <div className="text-sm text-blue-600 mt-1">우수</div>
+                
+                <div className="mt-4 space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span>벼:</span>
+                    <span className="font-bold">95점</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>배추:</span>
+                    <span className="font-bold">88점</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>토마토:</span>
+                    <span className="font-bold">93점</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="text-center p-6 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl">
+                <div className="text-4xl font-bold text-orange-600 mb-2">76점</div>
+                <div className="text-orange-800 font-medium">환경 적합도</div>
+                <div className="text-sm text-orange-600 mt-1">개선 필요</div>
+                
+                <div className="mt-4 space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span>기온:</span>
+                    <span className="font-bold text-red-600">68점</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>습도:</span>
+                    <span className="font-bold text-green-600">85점</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>토양:</span>
+                    <span className="font-bold text-green-600">88점</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="font-semibold text-blue-800 mb-3">🤖 AI 개선 제안</div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                  <div>
+                    <div className="font-medium text-red-700">긴급: 폭염 대응 강화</div>
+                    <div className="text-red-600">차광 시설 확충 및 관수량 50% 증량 권장</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                  <div>
+                    <div className="font-medium text-yellow-700">중요: 토양 pH 조정</div>
+                    <div className="text-yellow-600">2구역 pH 6.8 → 6.5 조정으로 배추 품질 개선</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                  <div>
+                    <div className="font-medium text-green-700">권장: 영양분 보충</div>
+                    <div className="text-green-600">질소 추가 시용으로 벼 수확량 5% 증대 가능</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 1부에서 받는 메인 앱 컴포넌트에 추가할 화면들
+const CompleteFarmingAppPart2 = () => {
+  // 1부에서 이미 정의된 상태들을 사용
+  const [currentScreen, setCurrentScreen] = useState('calendar');
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  
+  // 임시 데이터 (실제로는 1부에서 받음)
+  const mockData = {
+    livingSeasons: {
+      traditional: { name: '처서', date: '8월 23일', expectedTemp: 28 },
+      living: { name: '실질처서', date: '8월 26일', actualTemp: 31.2, adjustment: '+3일' }
+    },
+    weatherHistory: [],
+    crops: [],
+    farmData: { 
+      totalArea: 5000,
+      fields: [
+        { 
+          id: 'field001', name: '1구역 논', crop: 'rice', variety: '추청', area: 3000,
+          coordinates: { lat: 36.4645, lng: 127.1204 },
+          plantingDate: '2024-05-15', expectedHarvest: '2024-10-15',
+          soilType: '충적토', drainageType: '배수양호', lastSoilTest: '2024-03-15'
+        }
+      ]
+    },
+    sensors: {
+      soilMoisture: 45, soilTemp: 24.8, airTemp: 32.4, humidity: 68, ph: 6.2,
+      nitrogen: 120, phosphorus: 65, potassium: 180, co2: 420, 
+      lightIntensity: 45000, windSpeed: 5.2, leafWetness: 3.5
+    },
+    devices: [
+      { id: 1, name: '관수시스템', type: 'irrigation', status: 'active', autoMode: true, battery: 85 }
+    ],
+    yieldPredictions: {},
+    pestAlerts: [],
+    weatherData: { current: { temp: 32.4 } }
+  };
+
+  const speakText = (text) => {
+    if (voiceEnabled && 'speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ko-KR';
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* 상단 헤더 */}
+      <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-4 sticky top-0 z-50 shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="text-2xl">🌾</div>
+            <div>
+              <h1 className="text-xl font-bold">스마트 생활절기</h1>
+              <p className="text-xs opacity-90">2부: 절기달력 + 농장관리</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setVoiceEnabled(!voiceEnabled)}
+              className={`p-2 rounded ${voiceEnabled ? 'bg-green-500' : 'bg-green-700'}`}
+            >
+              🔊
+            </button>
+            <div className="text-xs text-center">
+              <div>Gold</div>
+              <div className="text-yellow-200">3450P</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 메인 콘텐츠 */}
+      <div className="pb-20">
+        {currentScreen === 'calendar' && (
+          <SeasonCalendarScreen 
+            livingSeasons={mockData.livingSeasons}
+            weatherHistory={mockData.weatherHistory}
+            crops={mockData.crops}
+            voiceEnabled={voiceEnabled}
+            speakText={speakText}
+          />
+        )}
+        {currentScreen === 'farm' && (
+          <ComprehensiveFarmScreen
+            farmData={mockData.farmData}
+            sensors={mockData.sensors}
+            devices={mockData.devices}
+            crops={mockData.crops}
+            yieldPredictions={mockData.yieldPredictions}
+            pestAlerts={mockData.pestAlerts}
+            weatherData={mockData.weatherData}
+            voiceEnabled={voiceEnabled}
+            speakText={speakText}
+          />
+        )}
+      </div>
+
+      {/* 하단 네비게이션 */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 shadow-lg">
+        <div className="flex justify-around">
+          <button className="flex flex-col items-center p-2 text-gray-400">
+            <div className="text-2xl">🏠</div>
+            <span className="text-xs mt-1">홈</span>
+          </button>
+          <button
+            onClick={() => setCurrentScreen('calendar')}
+            className={`flex flex-col items-center p-2 ${
+              currentScreen === 'calendar' ? 'text-green-600' : 'text-gray-400'
+            }`}
+          >
+            <div className="text-2xl">📅</div>
+            <span className="text-xs mt-1">절기달력</span>
+          </button>
+          <button
+            onClick={() => setCurrentScreen('farm')}
+            className={`flex flex-col items-center p-2 ${
+              currentScreen === 'farm' ? 'text-green-600' : 'text-gray-400'
+            }`}
+          >
+            <div className="text-2xl">🗺️</div>
+            <span className="text-xs mt-1">농장관리</span>
+          </button>
+          <button className="flex flex-col items-center p-2 text-gray-400">
+            <div className="text-2xl">👥</div>
+            <span className="text-xs mt-1">커뮤니티</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CompleteFarmingAppPart2;
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>현재:</span>
+                <span className="font-bold text-green-700">
+                  {livingSeasons?.traditional?.name || '처서'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>날짜:</span>
+                <span>{livingSeasons?.traditional?.date || '8월 23일'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>예상기온:</span>
+                <span>{livingSeasons?.traditional?.expectedTemp || 28}°C</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="text-2xl">🌡️</div>
+              <div>
+                <div className="font-bold text-blue-800">생활절기</div>
+                <div className="text-sm text-blue-600">실제 기온 기준</div>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>현재:</span>
+                <span className="font-bold text-blue-700">
+                  {livingSeasons?.living?.name || '실질처서'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>날짜:</span>
+                <span>{livingSeasons?.living?.date || '8월 26일'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>실제기온:</span>
+                <span>{livingSeasons?.living?.actualTemp?.toFixed(1) || 31.2}°C</span>
+              </div>
+              <div className="flex justify-between">
+                <span>조정:</span>
+                <span className="font-bold text-red-600">
+                  {livingSeasons?.living?.adjustment || '+3일'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="font-semibold text-yellow-800 mb-2">📈 절기 변화 분석</div>
+          <div className="text-sm text-yellow-700 space-y-1">
+            <div>• 올해 평균 절기 지연: +3.2일 (작년 대비 +0.8일)</div>
+            <div>• 주요 원인: 이상 고온 현상 지속</div>
+            <div>• 농작업 영향: 벼 생육기 연장, 수확시기 조정 필요</div>
+          </div>
+        </div>
+      </div>
+
+      {/* O-3. 월별 절기 달력 */}
+      <div className="bg-white rounded-xl shadow-lg p-5">
+        <h3 className="font-bold text-lg mb-4">
+          📆 {selectedMonth + 1}월 농업 달력
+        </h3>
+        
+        <div className="mb-6">
+          {viewMode === 'traditional' || viewMode === 'combined' ? (
+            <div className="mb-4 p-3 bg-green-50 rounded-lg">
+              <div className="font-semibold text-green-800 mb-1">🏛️ 전통절기</div>
+              <div className="text-sm text-green-700">
+                {seasonalCalendar[selectedMonth]?.traditional || '해당 월 절기 없음'}
+              </div>
+            </div>
+          ) : null}
+          
+          {viewMode === 'living' || viewMode === 'combined' ? (
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+              <div className="font-semibold text-blue-800 mb-1">🌡️ 생활절기</div>
+              <div className="text-sm text-blue-700">
+                {seasonalCalendar[selectedMonth]?.living || '해당 월 절기 없음'}
+              </div>
+            </div>
+          ) : null}
+        </div>
+        
+        <div className="space-y-4">
+          {Object.entries(cropCalendar).map(([cropType, calendar]) => {
+            const cropInfo = calendar[selectedMonth];
+            if (!cropInfo) return null;
+            
+            return (
+              <div key={cropType} className="p-4 border border-gray-200 rounded-lg">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="text-2xl">
+                    {cropType === 'rice' ? '🌾' : '🥬'}
+                  </div>
+                  <div>
+                    <div className="font-bold">
+                      {cropType === 'rice' ? '벼' : '배추'} 농작업
+                    </div>
+                    <div className="text-sm text-gray-600">{selectedMonth + 1}월 권장 작업</div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 p-3 rounded text-sm">
+                  {cropInfo}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* O-4. 기상 패턴 분석 */}
+      <div className="bg-white rounded-xl shadow-lg p-5">
+        <h3 className="font-bold text-lg mb-4">🌡️ 월별 기상 패턴 분석</h3>
+        
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="p-3 bg-red-50 rounded-lg">
+            <div className="font-semibold text-red-800 mb-2">평균 기온 변화</div>
+            <div className="text-sm text-red-700">
+              <div>평년: 24.5°C</div>
+              <div>올해: 27.8°C (+3.3°C)</div>
+              <div className="font-bold text-red-600">상승 추세</div>
+            </div>
+          </div>
+          
+          <div className="p-3 bg-blue-50 rounded-lg">
+            <div className="font-semibold text-blue-800 mb-2">강수 패턴</div>
+            <div className="text-sm text-blue-700">
+              <div>평년: 195mm</div>
+              <div>올해: 142mm (-27%)</div>
+              <div className="font-bold text-blue-600">가뭄 경향</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+          <div className="font-semibold text-orange-800 mb-2">⚠️ 농업 영향 예측</div>
+          <div className="text-sm text-orange-700 space-y-1">
+            <div>• 고온으로 인한 생육기간 연장</div>
+            <div>• 관수량 증가 필요 (평년 대비 +40%)</div>
+            <div>• 병해충 발생 위험 증가</div>
+            <div>• 수확시기 2-3주 지연 예상</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// P. 농장 관리 통합 화면 컴포넌트
+const ComprehensiveFarmScreen = ({ 
+  farmData, 
+  sensors, 
+  devices, 
+  crops, 
+  yieldPredictions,
+  pestAlerts,
+  weatherData,
+  voiceEnabled, 
+  speakText 
+}) => {
+  const [selectedField, setSelectedField] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [mapView, setMapView] = useState('satellite');
+
+  return (
+    <div className="p-4 space-y-6 pb-24">
+      {/* P-1. 농장 개요 헤더 */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-2xl font-bold">🏞️ 스마트 농장 관리</h2>
+            <p className="opacity-90">총 면적: {farmData.totalArea?.toLocaleString()}평 | 3개 구역</p>
+          </div>
+          <div className="text-right">
+            <div className="text-sm opacity-80">실시간 모니터링</div>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+              <span className="text-sm">센서 정상</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex gap-2">
+          {[
+            { key: 'overview', label: '전체현황', icon: '🗺️' },
+            { key: 'sensors', label: '센서데이터', icon: '📊' },
+            { key: 'devices', label: '장비제어', icon: '⚙️' },
+            { key: 'analysis', label: 'AI분석', icon: '🤖' }
+          ].map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === tab.key
+                  ? 'bg-white text-emerald-600'
+                  : 'bg-white bg-opacity-20 text-white hover:bg-opacity-30'
+              }`}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* P-2. 전체 현황 탭 */}
+      {activeTab === 'overview' && (
+        <>
+          <div className="bg-white rounded-xl shadow-lg p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg">🗺️ GPS 농장 지도</h3>
+              <div className="flex gap-2">
+                {['satellite', 'terrain', 'hybrid'].map(view => (
+                  <button
+                    key={view}
+                    onClick={() => setMapView(view)}
+                    className={`px-3 py-1 rounded text-sm ${
+                      mapView === view
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {view === 'satellite' ? '위성' : view === 'terrain' ? '지형' : '혼합'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="relative bg-green-50 h-64 rounded-lg border-2 border-green-200 mb-4 overflow-hidden">
+              <div className="absolute inset-0 opacity-20">
+                <div className="w-full h-full bg-gradient-to-br from-green-200 to-blue-200"></div>
+              </div>
+              
+              {farmData.fields?.map((field, idx) => {
+                const positions = [
+                  { top: '10%', left: '10%', width: '35%', height: '40%' },
+                  { top: '15%', right: '10%', width: '30%', height: '35%' },
+                  { bottom: '10%', left: '20%', width: '25%', height: '30%' }
+                ];
+                
+                const position = positions[idx] || positions[0];
+                const statusColors = {
+                  good: 'border-green-400 bg-green-100',
+                  warning: 'border-yellow-400 bg-yellow-100',
+                  danger: 'border-red-400 bg-red-100'
+                };
+                
+                return (
+                  <div
+                    key={field.id}
+                    className={`absolute border-2 rounded-lg p-3 cursor-pointer hover:shadow-lg transition-all ${
+                      statusColors[field.status || 'good']
+                    } ${selectedField?.id === field.id ? 'ring-2 ring-blue-400' : ''}`}
+                    style={position}
+                    onClick={() => {
+                      setSelectedField(field);
+                      voiceEnabled && speakText(`${field.name}을 선택했습니다`);
+                    }}
+                  >
+                    <div className="font-bold text-sm">{field.name}</div>
+                    <div className="text-xs text-gray-600 mb-2">
+                      {field.crop === 'rice' ? '🌾 벼' : field.crop === 'cabbage' ? '🥬 배추' : '🍅 토마토'}
+                      ({field.area?.toLocaleString()}평)
+                    </div>
+                    
+                    <div className="text-xs space-y-1">
+                      <div className="flex justify-between">
+                        <span>습도:</span>
+                        <span className="font-bold">
+                          {idx === 0 ? sensors.soilMoisture?.toFixed(0) : 
+                           idx === 1 ? (sensors.soilMoisture - 10)?.toFixed(0) : 
+                           (sensors.soilMoisture + 5)?.toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>온도:</span>
+                        <span className="font-bold">
+                          {idx === 0 ? sensors.soilTemp?.toFixed(1) : 
+                           idx === 1 ? (sensors.soilTemp - 2)?.toFixed(1) : 
+                           (sensors.soilTemp + 1)?.toFixed(1)}°C
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="text-xs text-gray-500 mt-2">
+                      📍 {field.coordinates?.lat.toFixed(4)}, {field.coordinates?.lng.toFixed(4)}
+                    </div>
+                  </div>
+                );
+              })}
+              
+              <div className="absolute top-4 right-4 bg-white bg-opacity-90 rounded p-2 text-xs">
+                <div className="font-semibold mb-1">상태 범례</div>
+                <div className="flex items-center gap-1 mb-1">
+                  <div className="w-3 h-3 bg-green-400 rounded"></div>
+                  <span>양호</span>
+                </div>
+                <div className="flex items-center gap-1 mb-1">
+                  <div className="w-3 h-3 bg-yellow-400 rounded"></div>
+                  <span>주의</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-red-400 rounded"></div>
+                  <span>위험</span>
+                </div>
+              </div>
+            </div>
+            
+            {selectedField && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-bold text-blue-800">{selectedField.name} 상세 정보</h4>
+                  <button 
+                    onClick={() => setSelectedField(null)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    ✕
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="space-y-2">
+                      <div><strong>작물:</strong> {selectedField.crop === 'rice' ? '벼' : selectedField.crop === 'cabbage' ? '배추' : '토마토'}</div>
+                      <div><strong>품종:</strong> {selectedField.variety}</div>
+                      <div><strong>면적:</strong> {selectedField.area?.toLocaleString()}평</div>
+                      <div><strong>파종일:</strong> {selectedField.plantingDate}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="space-y-2">
+                      <div><strong>토양:</strong> {selectedField.soilType}</div>
+                      <div><strong>배수:</strong> {selectedField.drainageType}</div>
+                      <div><strong>토양검사:</strong> {selectedField.lastSoilTest}</div>
+                      <div><strong>수확예정:</strong> {selectedField.expectedHarvest}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                {yieldPredictions[selectedField.id] && (
+                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded">
+                    <div className="font-semibold text-green-800 mb-2">🎯 AI 수확량 예측</div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <div>예상 수확량: <strong>{yieldPredictions[selectedField.id].predicted?.toLocaleString()}{yieldPredictions[selectedField.id].unit}</strong></div>
+                        <div>신뢰도: {yieldPredictions[selectedField.id].confidence}%</div>
+                      </div>
+                      <div className="text-xs">
+                        <div>날씨 영향: {yieldPredictions[selectedField.id].factors?.weather}%</div>
+                        <div>토양 점수: {yieldPredictions[selectedField.id].factors?.soil}점</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {farmData.fields?.map((field, idx) => {
+              const crop = crops.find(c => c.fieldId === field.id);
+              
+              return (
+                <div key={field.id} className="bg-white rounded-lg shadow-md p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="text-xl">
+                        {field.crop === 'rice' ? '🌾' : field.crop === 'cabbage' ? '🥬' : '🍅'}
+                      </div>
+                      <div>
+                        <div className="font-bold">{field.name}</div>
+                        <div className="text-sm text-gray-600">{field.area?.toLocaleString()}평</div>
+                      </div>
+                    </div>
+                    <div className={`w-3 h-3 rounded-full ${
+                      field.status === 'good' ? 'bg-green-400' : 
+                      field.status === 'warning' ? 'bg-yellow-400' : 'bg-red-400'
+                    }`}></div>
+                  </div>
+                  
+                  {crop && (
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>현재 단계:</span>
+                        <span className="font-medium">{crop.growthStage?.current?.stage}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>GDD 진행률:</span>
+                        <span className="font-medium">{crop.growthStage?.overallProgress?.toFixed(0)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>다음 단계까지:</span>
+                        <span className="font-medium">D-{crop.growthStage?.estimatedDaysToNext || '?'}</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <button className="w-full text-center text-blue-600 hover:text-blue-800 text-sm font-medium">
+                      상세 관리 →
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* P-3. 센서 데이터 탭 */}
+      {activeTab === 'sensors' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl shadow-lg p-5">
+            <h3 className="font-bold text-lg mb-4">📊 실시간 센서 모니터링</h3>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="p-4 bg-blue-50 rounded-lg text-center">
+                <div className="text-2xl mb-2">🌡️</div>
+                <div className="font-bold text-xl text-red-600">{sensors.airTemp?.toFixed(1)}°C</div>
+                <div className="text-sm text-gray-600">기온</div>
+                <div className="text-xs text-red-500">체감 {(sensors.airTemp + 3)?.toFixed(1)}°C</div>
+              </div>
+              
+              <div className="p-4 bg-cyan-50 rounded-lg text-center">
+                <div className="text-2xl mb-2">💧</div>
+                <div className="font-bold text-xl text-blue-600">{sensors.humidity?.toFixed(0)}%</div>
+                <div className="text-sm text-gray-600">대기습도</div>
+                <div className="text-xs text-blue-500">토양 {sensors.soilMoisture?.toFixed(0)}%</div>
+              </div>
+              
+              <div className="p-4 bg-green-50 rounded-lg text-center">
+                <div className="text-2xl mb-2">⚗️</div>
+                <div className="font-bold text-xl text-green-600">{sensors.ph?.toFixed(1)}</div>
+                <div className="text-sm text-gray-600">토양 pH</div>
+                <div className="text-xs text-green-500">적정 범위</div>
+              </div>
+              
+              <div className="p-4 bg-yellow-50 rounded-lg text-center">
+                <div className="text-2xl mb-2">☀️</div>
+                <div className="font-bold text-xl text-yellow-600">{(sensors.lightIntensity/1000)?.toFixed(0)}</div>
+                <div className="text-sm text-gray-600">조도 (klx)</div>
+                <div className="text-xs text-yellow-500">충분함</div>
+              </div>
+import React, { useState, useEffect, useCallback } from 'react';
+import { Calendar, Thermometer, CloudRain, Sun, Wind, AlertTriangle, TrendingUp, MapPin, Clock, Bell, Droplets, Eye, Activity, Settings, Camera, Bug, Leaf, Calculator, Map, BarChart3, Timer, Zap, CheckCircle, Users, MessageCircle, Star, Award, BookOpen, Phone, Volume2, Wifi, WifiOff, DollarSign, Heart, Share, Filter, Search, Send, ThumbsUp, AlertCircle, TrendingDown, ArrowUp, ArrowDown, Shield, Video, Headphones, Download, Wrench, Battery, Cpu, Database, Navigation, Smartphone, Monitor, Upload, Save, RefreshCw, Play, Pause, Home, Menu, X, Plus, Edit3, Trash2, FileText, Image, Mic, MicOff, Speaker, Target, Scissors, Sprout, Wheat, Apple, MessageSquare, UserCheck, Verified, Package, Truck, CreditCard, ChevronDown, ChevronUp, RotateCcw, Power, HelpCircle } from 'lucide-react';
+
+// 핵심 데이터베이스 및 알고리즘 (1부에서)
+const CROP_DATABASE = {
+  rice: {
+    name: '벼',
+    baseTemp: 10,
+    gddStages: [
+      { stage: '파종', gdd: 0, tasks: ['종자 준비', '논 정리'], duration: 7 },
+      { stage: '발아', gdd: 120, tasks: ['물 관리', '온도 조절'], duration: 14 },
+      { stage: '분얼', gdd: 400, tasks: ['제초', '추비시용'], duration: 30 },
+      { stage: '수잉', gdd: 800, tasks: ['물 깊이 조절', '병해충 방제'], duration: 35 },
+      { stage: '출수', gdd: 1200, tasks: ['수분 관리', '조류 방제'], duration: 20 },
+      { stage: '성숙', gdd: 1600, tasks: ['수확 준비', '건조 준비'], duration: 30 }
+    ],
+    expectedYield: { min: 1.5, max: 2.2, unit: 'kg/평' }
+  },
+  cabbage: {
+    name: '배추',
+    baseTemp: 5,
+    gddStages: [
+      { stage: '파종', gdd: 0, tasks: ['종자 소독', '상토 준비'], duration: 3 },
+      { stage: '발아', gdd: 80, tasks: ['온도 관리', '습도 조절'], duration: 7 },
+      { stage: '본엽', gdd: 200, tasks: ['간식', '웃거름'], duration: 21 },
+      { stage: '결구시작', gdd: 500, tasks: ['충분한 관수', '토양 관리'], duration: 20 },
+      { stage: '결구완성', gdd: 800, tasks: ['수확 준비', '저장 준비'], duration: 15 }
+    ],
+    expectedYield: { min: 15, max: 25, unit: 'kg/평' }
+  }
+};
+
+const calculateLivingSeason = (region, currentDate, weatherHistory) => {
+  const traditionalSeasons = [
+    { name: '처서', date: '2024-08-23', temp: 28 },
+    { name: '백로', date: '2024-09-07', temp: 25 },
+    { name: '추분', date: '2024-09-22', temp: 20 }
+  ];
+
+  const currentSeason = traditionalSeasons.find(season => {
+    const seasonDate = new Date(season.date);
+    return Math.abs(currentDate - seasonDate) < 15 * 24 * 60 * 60 * 1000;
+  });
+
+  if (!currentSeason) return null;
+
+  const recentAvgTemp = weatherHistory.slice(-7).reduce((sum, day) => sum + day.avgTemp, 0) / 7;
+  const tempDiff = recentAvgTemp - currentSeason.temp;
+  const dayAdjustment = Math.round(tempDiff / 2);
+  
+  const livingSeasonDate = new Date(currentSeason.date);
+  livingSeasonDate.setDate(livingSeasonDate.getDate() + dayAdjustment);
+
+  return {
+    traditional: {
+      name: currentSeason.name,
+      date: currentSeason.date,
+      expectedTemp: currentSeason.temp
+    },
+    living: {
+      name: `실질${currentSeason.name}`,
+      date: livingSeasonDate.toISOString().split('T')[0],
+      actualTemp: recentAvgTemp,
+      adjustment: dayAdjustment > 0 ? `+${dayAdjustment}일` : `${dayAdjustment}일`
+    }
+  };
+};
+
+const calculateRealGDD = (maxTemp, minTemp, baseTemp = 10) => {
+  const avgTemp = (maxTemp + minTemp) / 2;
+  return Math.max(0, avgTemp - baseTemp);
+};
+
+const analyzeWeatherRisks = (weatherHistory) => {
+  const risks = [];
+  const hotDays = weatherHistory.slice(-7).filter(day => day.maxTemp >= 33).length;
+  const extremeHotDays = weatherHistory.slice(-7).filter(day => day.maxTemp >= 35).length;
+  
+  if (extremeHotDays >= 3) {
+    risks.push({
+      type: 'HEATWAVE_EXTREME',
+      severity: 'critical',
+      title: '극한폭염 경보',
+      message: `${extremeHotDays}일 연속 35°C 이상, 작물 고사 위험`,
+      actions: [
+        '긴급 관수 시스템 가동',
+        '차광망 100% 설치',
+        '오전 6-9시에만 작업'
+      ],
+      autoActions: ['START_EMERGENCY_IRRIGATION', 'DEPLOY_SHADE_NETS']
+    });
+  }
+
+  return risks;
+};
+
+// 메인 앱 컴포넌트
+const CompleteFarmingAppFinal = () => {
+  // 전역 상태 관리
+  const [currentScreen, setCurrentScreen] = useState('home');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // 농업 데이터 상태
+  const [userProfile, setUserProfile] = useState({});
+  const [farmData, setFarmData] = useState({});
+  const [weatherData, setWeatherData] = useState({});
+  const [weatherHistory, setWeatherHistory] = useState([]);
+  const [crops, setCrops] = useState([]);
+  const [sensors, setSensors] = useState({});
+  const [devices, setDevices] = useState([]);
+  const [alerts, setAlerts] = useState([]);
+  const [livingSeasons, setLivingSeasons] = useState({});
+  const [yieldPredictions, setYieldPredictions] = useState({});
+
+  // 커뮤니티 관련 상태
+  const [activeChatRoom, setActiveChatRoom] = useState(null);
+  const [liveConsultation, setLiveConsultation] = useState(null);
+  const [newMessage, setNewMessage] = useState('');
+
+  // 음성 안내 시스템
+  const speakText = useCallback((text) => {
+    if (voiceEnabled && 'speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'ko-KR';
+      utterance.rate = 0.8;
+      utterance.pitch = 1.1;
+      speechSynthesis.speak(utterance);
+    }
+  }, [voiceEnabled]);
+
+  // 1부: 메인 홈화면 컴포넌트
+  const MainHomeScreen = () => {
+    return (
+      <div className="p-4 space-y-6 pb-24">
+        {/* 긴급 알림 섹션 */}
+        {alerts.length > 0 && (
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-4 shadow-lg animate-pulse">
+            <div className="flex items-center gap-2 text-red-800 font-bold mb-3">
+              <AlertTriangle className="w-6 h-6" />
+              🚨 긴급 농업 알림
+            </div>
+            {alerts.slice(0, 1).map((alert, idx) => (
+              <div key={idx} className="mb-3">
+                <div className="font-semibold text-red-700">{alert.title}</div>
+                <div className="text-red-600 text-sm">{alert.message}</div>
+                <div className="mt-2 flex gap-2">
+                  <button 
+                    onClick={() => speakText(alert.message)}
+                    className="px-3 py-1 bg-red-500 text-white rounded text-xs"
+                  >
+                    🔊 음성듣기
+                  </button>
+                  <button className="px-3 py-1 bg-blue-500 text-white rounded text-xs">
+                    🤖 자동처리
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 생활절기 현황 */}
+        <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
+            <Calendar className="w-6 h-6 text-green-600" />
+            오늘의 생활절기
+          </h3>
+          
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="text-center p-4 bg-green-100 rounded-lg">
+              <div className="text-sm text-gray-600">전통절기</div>
+              <div className="font-bold text-xl text-green-700">처서</div>
+              <div className="text-xs text-gray-500">8월 23일</div>
+              <div className="text-xs text-green-600 mt-1">예상: 28°C</div>
+            </div>
+            <div className="text-center p-4 bg-blue-100 rounded-lg">
+              <div className="text-sm text-gray-600">생활절기</div>
+              <div className="font-bold text-xl text-blue-700">실질처서</div>
+              <div className="text-xs text-gray-500">8월 26일 (+3일)</div>
+              <div className="text-xs text-blue-600 mt-1">실제: 31.2°C</div>
+            </div>
+          </div>
+          
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <div className="font-semibold text-yellow-800 mb-1">📊 기후변화 영향</div>
+            <div className="text-sm text-yellow-700">
+              평년보다 3일 늦은 절기로 생육기간이 연장되고 있습니다.
+            </div>
+          </div>
+        </div>
+
+        {/* GDD 진행 현황 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 text-orange-600" />
+            생육도일(GDD) 현황
+          </h3>
+          
+          {crops.slice(0, 2).map((crop, idx) => (
+            <div key={idx} className="mb-4 p-4 border border-gray-200 rounded-lg">
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{crop.type === 'rice' ? '🌾' : '🥬'}</span>
+                  <div>
+                    <div className="font-bold">{crop.name}</div>
+                    <div className="text-sm text-gray-600">현재: {crop.stage}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="font-bold text-green-600">{crop.progress}%</div>
+                  <div className="text-xs text-gray-500">완료</div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-200 rounded-full h-3 mb-2">
+                <div 
+                  className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-1000"
+                  style={{ width: `${crop.progress}%` }}
+                ></div>
+              </div>
+              
+              <div className="text-xs text-blue-600">
+                📋 다음 작업: {crop.nextTask} (D-{crop.daysLeft})
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 스마트팜 상태 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
+            <Zap className="w-6 h-6 text-yellow-600" />
+            스마트팜 제어상태
+          </h3>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Droplets className="w-5 h-5 text-blue-600" />
+                <span className="font-medium">자동관수</span>
+              </div>
+              <div className="text-sm space-y-1">
+                <div>상태: <span className="text-green-600 font-bold">가동중</span></div>
+                <div>토양습도: {sensors.soilMoisture?.toFixed(0)}%</div>
+                <div>목표: 65%</div>
+              </div>
+            </div>
+            
+            <div className="p-3 bg-green-50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Wind className="w-5 h-5 text-green-600" />
+                <span className="font-medium">환기시스템</span>
+              </div>
+              <div className="text-sm space-y-1">
+                <div>상태: <span className="text-yellow-600 font-bold">대기중</span></div>
+                <div>온도: {sensors.airTemp?.toFixed(1)}°C</div>
+                <div>설정: 28°C</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* AI 추천 작업 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
+            <Target className="w-6 h-6 text-purple-600" />
+            오늘의 추천 작업
+          </h3>
+          
+          <div className="space-y-3">
+            <div className="p-4 bg-red-50 border-l-4 border-red-400 rounded-lg">
+              <div className="flex items-center gap-3 mb-2">
+                <Bell className="w-6 h-6 text-red-600 animate-bounce" />
+                <div>
+                  <div className="font-bold text-red-800">긴급: 오전 관수 필수</div>
+                  <div className="text-sm text-red-600">토양습도 45%, 임계점 도달</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-lg">
+              <div className="flex items-center gap-3">
+                <Bug className="w-6 h-6 text-orange-600" />
+                <div>
+                  <div className="font-bold text-orange-800">병해충 예방 방제 (D-2)</div>
+                  <div className="text-sm text-orange-600">벼멸구 발생 위험 85%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // 2부: 절기 달력 화면
+  const SeasonCalendarScreen = () => {
+    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+    const [viewMode, setViewMode] = useState('combined');
+
+    const seasonalCalendar = {
+      8: { traditional: '입추(8/7), 처서(8/23)', living: '실질입추(8/10), 실질처서(8/26)' },
+      9: { traditional: '백로(9/7), 추분(9/22)', living: '실질백로(9/10), 실질추분(9/25)' },
+      10: { traditional: '한로(10/8), 상강(10/23)', living: '실질한로(10/11), 실질상강(10/26)' }
+    };
+
+    return (
+      <div className="p-4 space-y-6 pb-24">
+        {/* 달력 헤더 */}
+        <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl p-5">
+          <h2 className="text-2xl font-bold mb-4">📅 2024년 생활절기 달력</h2>
+          
+          <div className="flex gap-2 mb-4">
+            {[
+              { key: 'traditional', label: '전통절기', icon: '🏛️' },
+              { key: 'living', label: '생활절기', icon: '🌡️' },
+              { key: 'combined', label: '통합뷰', icon: '📊' }
+            ].map(mode => (
+              <button
+                key={mode.key}
+                onClick={() => setViewMode(mode.key)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                  viewMode === mode.key
+                    ? 'bg-white text-green-600'
+                    : 'bg-white bg-opacity-20 text-white'
+                }`}
+              >
+                {mode.icon} {mode.label}
+              </button>
+            ))}
+          </div>
+          
+          <div className="flex gap-2 overflow-x-auto">
+            {[8, 9, 10, 11, 12].map(month => (
+              <button
+                key={month}
+                onClick={() => setSelectedMonth(month)}
+                className={`px-3 py-2 rounded-lg text-sm ${
+                  selectedMonth === month
+                    ? 'bg-white text-green-600 font-bold'
+                    : 'bg-white bg-opacity-20 text-white'
+                }`}
+              >
+                {month + 1}월
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 월별 절기 정보 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-lg mb-4">
+            📆 {selectedMonth + 1}월 농업 달력
+          </h3>
+          
+          {seasonalCalendar[selectedMonth] && (
+            <div className="space-y-4">
+              <div className="p-3 bg-green-50 rounded-lg">
+                <div className="font-semibold text-green-800 mb-1">🏛️ 전통절기</div>
+                <div className="text-sm text-green-700">{seasonalCalendar[selectedMonth].traditional}</div>
+              </div>
+              
+              <div className="p-3 bg-blue-50 rounded-lg">
+                <div className="font-semibold text-blue-800 mb-1">🌡️ 생활절기</div>
+                <div className="text-sm text-blue-700">{seasonalCalendar[selectedMonth].living}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // 2부: 농장 관리 화면
+  const FarmManagementScreen = () => {
+    const [selectedField, setSelectedField] = useState(null);
+
+    return (
+      <div className="p-4 space-y-6 pb-24">
+        {/* 농장 개요 */}
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl p-5">
+          <h2 className="text-2xl font-bold mb-2">🏞️ 스마트 농장 관리</h2>
+          <p className="opacity-90">총 면적: {farmData.totalArea?.toLocaleString()}평 • 3개 구역</p>
+        </div>
+
+        {/* GPS 농장 지도 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-lg mb-4">🗺️ GPS 농장 지도</h3>
+          
+          <div className="relative bg-green-50 h-64 rounded-lg border-2 border-green-200 mb-4">
+            {farmData.fields?.map((field, idx) => {
+              const positions = [
+                { top: '10%', left: '10%', width: '35%', height: '40%' },
+                { top: '15%', right: '10%', width: '30%', height: '35%' },
+                { bottom: '10%', left: '20%', width: '25%', height: '30%' }
+              ];
+              
+              const position = positions[idx] || positions[0];
+              
+              return (
+                <div
+                  key={field.id || idx}
+                  className={`absolute border-2 rounded-lg p-3 cursor-pointer hover:shadow-lg transition-all border-green-400 bg-green-100 ${
+                    selectedField?.id === field.id ? 'ring-2 ring-blue-400' : ''
+                  }`}
+                  style={position}
+                  onClick={() => setSelectedField(field)}
+                >
+                  <div className="font-bold text-sm">{field.name}</div>
+                  <div className="text-xs text-gray-600 mb-2">
+                    {field.crop === 'rice' ? '🌾 벼' : field.crop === 'cabbage' ? '🥬 배추' : '🍅 토마토'}
+                    ({field.area?.toLocaleString()}평)
+                  </div>
+                  
+                  <div className="text-xs space-y-1">
+                    <div>습도: {field.moisture || 65}%</div>
+                    <div>온도: {sensors.soilTemp?.toFixed(1)}°C</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {selectedField && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 className="font-bold text-blue-800 mb-3">{selectedField.name} 상세 정보</h4>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <div><strong>작물:</strong> {selectedField.crop === 'rice' ? '벼' : '배추'}</div>
+                  <div><strong>면적:</strong> {selectedField.area?.toLocaleString()}평</div>
+                </div>
+                <div>
+                  <div><strong>습도:</strong> {selectedField.moisture || 65}%</div>
+                  <div><strong>상태:</strong> 양호</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 센서 데이터 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-lg mb-4">📊 실시간 센서 모니터링</h3>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 bg-red-50 rounded-lg text-center">
+              <Thermometer className="w-8 h-8 text-red-500 mx-auto mb-2" />
+              <div className="font-bold text-xl text-red-600">{sensors.airTemp?.toFixed(1)}°C</div>
+              <div className="text-sm text-gray-600">기온</div>
+            </div>
+            
+            <div className="p-4 bg-blue-50 rounded-lg text-center">
+              <Droplets className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+              <div className="font-bold text-xl text-blue-600">{sensors.humidity?.toFixed(0)}%</div>
+              <div className="text-sm text-gray-600">습도</div>
+            </div>
+            
+            <div className="p-4 bg-green-50 rounded-lg text-center">
+              <Activity className="w-8 h-8 text-green-500 mx-auto mb-2" />
+              <div className="font-bold text-xl text-green-600">{sensors.ph?.toFixed(1)}</div>
+              <div className="text-sm text-gray-600">토양 pH</div>
+            </div>
+            
+            <div className="p-4 bg-yellow-50 rounded-lg text-center">
+              <Sun className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
+              <div className="font-bold text-xl text-yellow-600">{((sensors.lightIntensity || 45000)/1000)?.toFixed(0)}</div>
+              <div className="text-sm text-gray-600">조도(klx)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // 3부: 커뮤니티 화면
+  const CommunityScreen = () => {
+    const chatRooms = [
+      { id: 1, name: '공주시 벼농사 모임', members: 45, active: 12, lastMessage: '방제 결과 공유합니다' },
+      { id: 2, name: '폭염 대응 긴급방', members: 128, active: 34, lastMessage: '관수 시스템 고장났어요' },
+      { id: 3, name: '스마트팜 기술교류', members: 89, active: 15, lastMessage: '드론 방제 후기' }
+    ];
+
+    const experts = [
+      { id: 1, name: '박작물박사', specialty: '병해충 방제', rating: 4.9, status: 'online' },
+      { id: 2, name: '이토양전문가', specialty: '토양 개량', rating: 4.8, status: 'busy' },
+      { id: 3, name: '정스마트팜', specialty: '스마트팜 설계', rating: 4.7, status: 'online' }
+    ];
+
+    return (
+      <div className="p-4 space-y-6 pb-24">
+        {/* 실시간 채팅 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+            <MessageSquare className="w-6 h-6 text-indigo-600" />
+            실시간 농업 채팅
+          </h3>
+
+          {!activeChatRoom ? (
+            <div className="space-y-3">
+              {chatRooms.map(room => (
+                <div 
+                  key={room.id} 
+                  className="p-4 border border-gray-200 rounded-lg hover:border-indigo-300 cursor-pointer"
+                  onClick={() => setActiveChatRoom(room)}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="font-semibold text-indigo-800">{room.name}</div>
+                    <div className="flex items-center gap-1 text-xs text-green-600">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      {room.active}명 활성
+                    </div>
+                  </div>
+                  <div className="text-sm text-gray-600">{room.lastMessage}</div>
+                  <div className="text-xs text-gray-500">총 {room.members}명 참여</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="font-bold text-indigo-800">{activeChatRoom.name}</div>
+                <button onClick={() => setActiveChatRoom(null)}>
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-3 mb-4 h-40 overflow-y-auto bg-gray-50 rounded p-3">
+                <div className="flex justify-start">
+                  <div className="bg-white p-2 rounded-lg max-w-xs">
+                    <div className="text-xs text-gray-500 mb-1">김농부 • 14:35</div>
+                    <div className="text-sm">벼멸구 방제 완료했습니다. 효과 좋네요!</div>
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <div className="bg-indigo-600 text-white p-2 rounded-lg max-w-xs">
+                    <div className="text-sm">우리 동네는 아직 괜찮은 것 같은데요</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="메시지를 입력하세요..."
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                />
+                <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg">
+                  <Send className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 전문가 상담 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+            <UserCheck className="w-6 h-6 text-blue-600" />
+            전문가 실시간 상담
+          </h3>
+
+          {!liveConsultation ? (
+            <div className="space-y-4">
+              {experts.map(expert => (
+                <div key={expert.id} className="p-4 border border-gray-200 rounded-lg">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                        {expert.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="font-bold flex items-center gap-2">
+                          {expert.name}
+                          <Verified className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div className="text-sm text-gray-600">{expert.specialty}</div>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                          <span className="text-sm">{expert.rating}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`w-3 h-3 rounded-full ${
+                      expert.status === 'online' ? 'bg-green-400' : 'bg-yellow-400'
+                    }`}></div>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setLiveConsultation(expert)}
+                      disabled={expert.status !== 'online'}
+                      className={`flex-1 py-2 rounded text-sm font-medium ${
+                        expert.status === 'online'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      <Video className="w-4 h-4 inline mr-1" />
+                      화상 상담
+                    </button>
+                    <button className="flex-1 py-2 bg-blue-600 text-white rounded text-sm">
+                      <MessageCircle className="w-4 h-4 inline mr-1" />
+                      채팅 상담
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                    {liveConsultation.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-bold">{liveConsultation.name}</div>
+                    <div className="text-sm text-green-600">상담 진행중</div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setLiveConsultation(null)}
+                  className="px-3 py-1 bg-red-500 text-white rounded text-sm"
+                >
+                  상담 종료
+                </button>
+              </div>
+
+              <div className="bg-gray-100 rounded-lg p-4 mb-4 h-48 flex items-center justify-center">
+                <div className="text-center text-gray-600">
+                  <Video className="w-16 h-16 mx-auto mb-2 opacity-50" />
+                  <div>화상 상담 연결중...</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 시장가격 정보 */}
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+            <TrendingUp className="w-6 h-6 text-green-600" />
+            실시간 농산물 시세
+          </h3>
+
+          <div className="space-y-3">
+            {[
+              { name: '쌀(일반)', price: 52000, change: '+8.3%', trend: 'up' },
+              { name: '배추', price: 800, change: '-33.3%', trend: 'down' },
+              { name: '토마토', price: 3200, change: '+10.3%', trend: 'up' }
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">
+                    {item.name.includes('쌀') ? '🌾' : item.name.includes('배추') ? '🥬' : '🍅'}
+                  </span>
+                  <div>
+                    <div className="font-medium">{item.name}</div>
+                    <div className="text-sm text-gray-600">{item.price.toLocaleString()}원</div>
+                  </div>
+                </div>
+                <div className={`flex items-center gap-1 ${
+                  item.trend === 'up' ? 'text-red-600' : 'text-blue-600'
+                }`}>
+                  {item.trend === 'up' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
+                  <span className="font-semibold">{item.change}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // 설정 화면
+  const SettingsScreen = () => {
+    return (
+      <div className="p-4 space-y-6 pb-24">
+        <div className="bg-white rounded-xl shadow-lg p-5">
+          <h2 className="text-2xl font-bold mb-4">⚙️ 앱 설정</h2>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-green-50 rounded-lg">
+              <div className="font-semibold text-green-800 mb-2">👤 농부 프로필</div>
+              <div className="space-y-2 text-sm">
+                <div>이름: {userProfile.name}</div>
+                <div>지역: {userProfile.location}</div>
+                <div>등급: {userProfile.level} ({userProfile.points}P)</div>
+                <div>농업경력: {userProfile.experience}년</div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              <div>
+                <div className="font-medium">🔊 음성 안내</div>
+                <div className="text-sm text-gray-600">작업 알림을 음성으로 안내</div>
+              </div>
+              <button 
+                onClick={() => setVoiceEnabled(!voiceEnabled)}
+                className={`w-12 h-6 rounded-full transition-colors ${
+                  voiceEnabled ? 'bg-green-500' : 'bg-gray-300'
+                }`}
+              >
+                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                  voiceEnabled ? 'translate-x-6' : 'translate-x-0.5'
+                }`}></div>
+              </button>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              <div>
+                <div className="font-medium">📶 오프라인 모드</div>
+                <div className="text-sm text-gray-600">네트워크 없이 기본 기능 사용</div>
+              </div>
+              <button 
+                onClick={() => setIsOffline(!isOffline)}
+                className={`w-12 h-6 rounded-full transition-colors ${
+                  isOffline ? 'bg-yellow-500' : 'bg-gray-300'
+                }`}
+              >
+                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                  isOffline ? 'translate-x-6' : 'translate-x-0.5'
+                }`}></div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // 센서 데이터 업데이트
+  const updateSensorData = useCallback(() => {
+    setSensors({
+      airTemp: 32 + Math.random() * 4,
+      soilTemp: 24 + Math.random() * 4,
+      humidity: 65 + Math.random() * 20,
+      soilMoisture: 45 + Math.random() * 20,
+      ph: 6.0 + Math.random() * 0.8,
+      lightIntensity: 45000 + Math.random() * 10000
+    });
+  }, []);
+
+  // 데이터 초기화
+  useEffect(() => {
+    const initializeApp = () => {
+      setUserProfile({
+        name: '김농부',
+        location: '공주시 유구읍',
+        level: 'Gold',
+        points: 3450,
+        experience: 15
+      });
+
+      setFarmData({
+        totalArea: 5000,
+        fields: [
+          { id: 'field1', name: '1구역 논', crop: 'rice', area: 3000, moisture: 78 },
+          { id: 'field2', name: '2구역 밭', crop: 'cabbage', area: 1500, moisture: 65 },
+          { id: 'field3', name: '3구역 온실', crop: 'tomato', area: 800, moisture: 72 }
+        ]
+      });
+
+      setCrops([
+        { name: '벼', type: 'rice', stage: '수잉기', progress: 75, nextTask: '병해충 방제', daysLeft: 3 },
+        { name: '배추', type: 'cabbage', stage: '결구시작', progress: 60, nextTask: '웃거름', daysLeft: 5 }
+      ]);
+
+      setDevices([
+        { name: '관수시스템', status: 'active' },
+        { name: '환기시스템', status: 'standby' },
+        { name: 'AI카메라', status: 'monitoring' }
+      ]);
+
+      setAlerts([
+        {
+          title: '폭염 주의보',
+          message: '내일 최고기온 36°C 예상, 긴급 관수 필요'
+        }
+      ]);
+
+      setNotifications([
+        { id: 1, title: '폭염경보', message: '내일 최고기온 36°C', urgent: true },
+        { id: 2, title: '작업알림', message: '벼 병해충 방제 D-3', urgent: false }
+      ]);
+
+      updateSensorData();
+    };
+
+    initializeApp();
+  }, [updateSensorData]);
+
+  // 네트워크 상태 관리
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // 화면 전환 함수
+  const switchScreen = (screen) => {
+    setCurrentScreen(screen);
+    setIsMenuOpen(false);
+    if (voiceEnabled) {
+      const screenName = {
+        'home': '홈 화면',
+        'calendar': '절기 달력',
+        'farm': '농장 관리',
+        'community': '커뮤니티',
+        'settings': '설정'
+      }[screen];
+      speakText(`${screenName}으로 이동했습니다`);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-green-600 flex items-center justify-center">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mx-auto mb-4"></div>
+          <h2 className="text-xl font-bold">농장 데이터 로딩 중...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* 상단 헤더 */}
+      <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-4 sticky top-0 z-50 shadow-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 hover:bg-green-700 rounded-lg"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+            <div>
+              <h1 className="text-xl font-bold">스마트 생활절기</h1>
+              <p className="text-xs opacity-90">AI 농업 통합 플랫폼</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {isOffline ? <WifiOff className="w-5 h-5 text-red-300" /> : <Wifi className="w-5 h-5 text-green-300" />}
+            
+            <button 
+              onClick={() => setVoiceEnabled(!voiceEnabled)}
+              className={`p-2 rounded-lg ${voiceEnabled ? 'bg-green-500' : 'bg-green-700'}`}
+            >
+              <Volume2 className="w-5 h-5" />
+            </button>
+            
+            <button 
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 hover:bg-green-700 rounded-lg"
+            >
+              <Bell className="w-5 h-5" />
+              {notifications.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {notifications.length}
+                </span>
+              )}
+            </button>
+            
+            <div className="text-xs text-center">
+              <div>{userProfile.level}</div>
+              <div className="text-yellow-200">{userProfile.points}P</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 사이드 메뉴 */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setIsMenuOpen(false)}>
+          <div className="fixed left-0 top-0 h-full w-80 bg-white shadow-xl">
+            <div className="p-4 bg-green-600 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-lg">{userProfile.name}</div>
+                  <div className="text-sm opacity-90">{userProfile.location}</div>
+                </div>
+                <button onClick={() => setIsMenuOpen(false)}>
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-4 space-y-3">
+              <div className="font-semibold text-gray-800 mb-3">빠른 메뉴</div>
+              {[
+                { icon: Calculator, text: '농업 계산기' },
+                { icon: Camera, text: '병해충 진단' },
+                { icon: Phone, text: '응급 상담' },
+                { icon: HelpCircle, text: '도움말' }
+              ].map((item, idx) => (
+                <button 
+                  key={idx}
+                  className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg text-left"
+                >
+                  <item.icon className="w-5 h-5 text-green-600" />
+                  <span>{item.text}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 알림 패널 */}
+      {showNotifications && (
+        <div className="fixed top-16 right-4 w-80 bg-white rounded-lg shadow-xl border z-30 max-h-96 overflow-y-auto">
+          <div className="p-4 border-b bg-gray-50">
+            <div className="flex items-center justify-between">
+              <div className="font-bold">알림 ({notifications.length})</div>
+              <button onClick={() => setShowNotifications(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-2">
+            {notifications.map(notif => (
+              <div key={notif.id} className={`p-3 border-l-4 rounded-lg mb-2 ${
+                notif.urgent ? 'bg-red-50 border-red-400' : 'bg-blue-50 border-blue-400'
+              }`}>
+                <div className="font-medium text-sm">{notif.title}</div>
+                <div className="text-xs text-gray-600 mt-1">{notif.message}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 메인 콘텐츠 */}
+      <div className="pb-20">
+        {currentScreen === 'home' && <MainHomeScreen />}
+        {currentScreen === 'calendar' && <SeasonCalendarScreen />}
+        {currentScreen === 'farm' && <FarmManagementScreen />}
+        {currentScreen === 'community' && <CommunityScreen />}
+        {currentScreen === 'settings' && <SettingsScreen />}
+      </div>
+
+      {/* 하단 네비게이션 */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+        <div className="flex justify-around px-2 py-2">
+          {[
+            { key: 'home', icon: Home, label: '홈' },
+            { key: 'calendar', icon: Calendar, label: '절기달력' },
+            { key: 'farm', icon: Map, label: '농장관리' },
+            { key: 'community', icon: Users, label: '커뮤니티' },
+            { key: 'settings', icon: Settings, label: '설정' }
+          ].map(nav => (
+            <button
+              key={nav.key}
+              onClick={() => switchScreen(nav.key)}
+              className={`flex flex-col items-center p-2 transition-colors ${
+                currentScreen === nav.key ? 'text-green-600' : 'text-gray-400'
+              }`}
+            >
+              <nav.icon className="w-6 h-6 mb-1" />
+              <span className="text-xs">{nav.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 오프라인 상태 표시 */}
+      {isOffline && (
+        <div className="fixed bottom-20 left-4 right-4 bg-yellow-500 text-white p-3 rounded-lg shadow-lg z-20">
+          <div className="flex items-center gap-2">
+            <WifiOff className="w-5 h-5" />
+            <div className="flex-1">
+              <div className="font-medium">오프라인 모드</div>
+              <div className="text-sm opacity-90">기본 기능만 사용 가능</div>
+            </div>
+            <button 
+              onClick={() => setIsOffline(false)}
+              className="px-3 py-1 bg-yellow-600 rounded text-sm"
+            >
+              재연결
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 응급 상황 버튼 */}
+      <button 
+        onClick={() => speakText('응급 상황입니다. 전문가와 연결 중입니다')}
+        className="fixed bottom-24 right-4 w-14 h-14 bg-red-500 text-white rounded-full shadow-lg flex items-center justify-center z-30 animate-pulse"
+      >
+        <Phone className="w-6 h-6" />
+      </button>
+
+      {/* 음성 안내 상태 */}
+      {voiceEnabled && (
+        <div className="fixed top-20 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm flex items-center gap-2 z-20">
+          <Volume2 className="w-4 h-4" />
+          음성안내 ON
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CompleteFarmingAppFinal;
