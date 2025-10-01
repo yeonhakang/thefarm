@@ -108,7 +108,7 @@ const SmartFarmApp = () => {
 
       <div className="pb-20">
         {currentScreen === 'home' && (
-          <div className="p-4 space-y-6 pb-24">
+          <div className="p-4 space-y-6">
             {alerts.length > 0 && (
               <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-4 shadow-lg">
                 <div className="flex items-center gap-2 text-red-800 font-bold mb-3">
@@ -131,6 +131,7 @@ const SmartFarmApp = () => {
                 ))}
               </div>
             )}
+            
             <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl shadow-lg p-5">
               <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
                 <Calendar className="w-6 h-6 text-green-600" />오늘의 생활절기
@@ -154,6 +155,7 @@ const SmartFarmApp = () => {
                 <div className="text-sm text-yellow-700">올해는 평년보다 {livingSeasons?.living?.adjustment} 늦은 절기로, 기후변화의 영향으로 생육기간이 연장되고 있습니다.</div>
               </div>
             </div>
+
             <div className="bg-white rounded-xl shadow-lg p-5">
               <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
                 <TrendingUp className="w-6 h-6 text-orange-600" />생육도일(GDD) 실시간 현황
@@ -196,6 +198,7 @@ const SmartFarmApp = () => {
                 </div>
               ))}
             </div>
+
             <div className="bg-white rounded-xl shadow-lg p-5">
               <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
                 <Zap className="w-6 h-6 text-yellow-600" />AI 스마트팜 자동제어
@@ -229,11 +232,10 @@ const SmartFarmApp = () => {
         )}
 
         {currentScreen === 'calendar' && (
-// ===== Part 1 끝, Part 2에서 계속 =====
-          <div className="p-4 space-y-6 pb-24">
+          <div className="p-4 space-y-6">
             <div className="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl p-5">
               <h2 className="text-2xl font-bold mb-4">2024년 생활절기 달력</h2>
-              <div className="flex gap-2 overflow-x-auto">
+              <div className="flex gap-2 overflow-x-auto pb-2">
                 {Array.from({length: 12}, (_, i) => i).map(month => (
                   <button key={month} onClick={() => setSelectedMonth(month)}
                     className={`px-3 py-2 rounded-lg text-sm whitespace-nowrap ${selectedMonth === month ? 'bg-white text-green-600 font-bold' : 'bg-white bg-opacity-20'}`}>
@@ -267,177 +269,8 @@ const SmartFarmApp = () => {
           </div>
         )}
 
-        {currentScreen === 'management' && (
-          <div className="p-4 space-y-6 pb-24">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl p-5">
-              <h2 className="text-2xl font-bold mb-2">농장 관리</h2>
-              <p className="opacity-90">실시간 농장 데이터 및 작물 관리</p>
-            </div>
-            <div className="bg-white rounded-xl shadow-lg p-5">
-              <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
-                <Map className="w-6 h-6 text-green-600" />농장 지도
-              </h3>
-              <div className="bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg p-8 text-center">
-                <div className="text-4xl mb-2">🗺️</div>
-                <div className="font-semibold text-gray-700">농장 위치: {userProfile.location}</div>
-                <div className="text-sm text-gray-600 mt-2">총 면적: {farmData.totalArea}평</div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl shadow-lg p-5">
-              <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
-                <BarChart3 className="w-6 h-6 text-blue-600" />센서 데이터 차트
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-2">토양 습도</div>
-                  <div className="text-2xl font-bold text-blue-600">{sensors.soilMoisture?.toFixed(1)}%</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${sensors.soilMoisture}%` }}></div>
-                  </div>
-                </div>
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-2">기온</div>
-                  <div className="text-2xl font-bold text-red-600">{sensors.airTemp?.toFixed(1)}°C</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div className="bg-red-500 h-2 rounded-full" style={{ width: `${(sensors.airTemp/40)*100}%` }}></div>
-                  </div>
-                </div>
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-2">대기 습도</div>
-                  <div className="text-2xl font-bold text-green-600">{sensors.humidity?.toFixed(0)}%</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div className="bg-green-500 h-2 rounded-full" style={{ width: `${sensors.humidity}%` }}></div>
-                  </div>
-                </div>
-                <div className="p-4 border border-gray-200 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-2">토양 pH</div>
-                  <div className="text-2xl font-bold text-purple-600">{sensors.ph?.toFixed(2)}</div>
-                  <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${((sensors.ph-5)/3)*100}%` }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {currentScreen === 'community' && (
-// ===== Part 2 끝, Part 3에서 계속 =====
-<div className="p-4 space-y-6 pb-24">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl p-5">
-              <h2 className="text-2xl font-bold mb-2">농업 커뮤니티</h2>
-              <p className="opacity-90">이웃 농부들과 실시간 정보 공유</p>
-            </div>
-            {!activeChatRoom ? (
-              <>
-                <div className="bg-white rounded-xl shadow-lg p-5">
-                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <MessageSquare className="w-6 h-6 text-indigo-600" />실시간 채팅방
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      { id: 1, name: '공주시 벼농사 모임', members: 45, active: 12, lastMessage: '방제 결과 공유합니다', urgent: false },
-                      { id: 2, name: '폭염 대응 긴급방', members: 128, active: 34, lastMessage: '관수 시스템 고장났어요', urgent: true }
-                    ].map(room => (
-                      <div key={room.id} className={`p-4 border rounded-lg cursor-pointer hover:border-indigo-300 ${room.urgent ? 'border-red-300 bg-red-50' : 'border-gray-200'}`}
-                        onClick={() => setActiveChatRoom(room)}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className={`font-semibold ${room.urgent ? 'text-red-800' : 'text-indigo-800'}`}>{room.name}</div>
-                            {room.urgent && <span className="px-2 py-1 bg-red-500 text-white text-xs rounded-full animate-pulse">긴급</span>}
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-green-600">
-                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>{room.active}명
-                          </div>
-                        </div>
-                        <div className="text-sm text-gray-600">{room.lastMessage}</div>
-                        <div className="text-xs text-gray-500 mt-1">총 {room.members}명 참여</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-white rounded-xl shadow-lg p-5">
-                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <Users className="w-6 h-6 text-green-600" />지역 소식
-                  </h3>
-                  <div className="space-y-3">
-                    {[
-                      { id: 1, author: '김농부', location: '1.2km', content: '우리 동네도 벼멸구 발견! 방제 같이 하실분?', likes: 5, comments: 2, urgent: true },
-                      { id: 2, author: '이농사', location: '0.8km', content: '배추 정식했는데 생육이 좋네요. 사진 공유합니다.', likes: 8, comments: 4, urgent: false }
-                    ].map(post => (
-                      <div key={post.id} className={`p-4 border rounded-lg ${post.urgent ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}>
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center text-white font-bold">
-                              {post.author[0]}
-                            </div>
-                            <div>
-                              <div className="font-semibold">{post.author}</div>
-                              <div className="text-xs text-gray-500">{post.location}</div>
-                            </div>
-                          </div>
-                          {post.urgent && <AlertTriangle className="w-5 h-5 text-red-600" />}
-                        </div>
-                        <div className="text-sm mb-2">{post.content}</div>
-                        <div className="flex items-center gap-4 text-xs text-gray-600">
-                          <button className="flex items-center gap-1 hover:text-red-500">
-                            <ThumbsUp className="w-4 h-4" />{post.likes}
-                          </button>
-                          <button className="flex items-center gap-1 hover:text-blue-500">
-                            <MessageCircle className="w-4 h-4" />{post.comments}
-                          </button>
-                          <button className="flex items-center gap-1 hover:text-green-500">
-                            <Share className="w-4 h-4" />공유
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="bg-white rounded-xl shadow-lg p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="font-bold text-indigo-800">{activeChatRoom.name}</div>
-                    <div className="text-sm text-gray-600">{activeChatRoom.active}명이 대화 중</div>
-                  </div>
-                  <button onClick={() => setActiveChatRoom(null)} className="p-2 hover:bg-gray-100 rounded">
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                <div className="space-y-3 mb-4 h-64 overflow-y-auto bg-gray-50 rounded p-3">
-                  <div className="flex justify-start">
-                    <div className="bg-white p-3 rounded-lg max-w-xs shadow-sm">
-                      <div className="text-xs text-gray-500 mb-1">김농부</div>
-                      <div className="text-sm">벼멸구 방제 완료했습니다. 효과 좋네요!</div>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <div className="bg-indigo-600 text-white p-3 rounded-lg max-w-xs">
-                      <div className="text-sm">우리 동네는 아직 괜찮은 것 같은데요</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button className="p-2 border border-gray-300 rounded hover:bg-gray-50">
-                    <Camera className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="메시지를 입력하세요..." className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                    onKeyPress={(e) => e.key === 'Enter' && setNewMessage('')} />
-                  <button onClick={() => setNewMessage('')} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                    <Send className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {currentScreen === 'settings' && (
-// ===== Part 3 끝, Part 4에서 계속 =====
-<div className="p-4 space-y-6 pb-24">
+          <div className="p-4 space-y-6">
             <div className="bg-gradient-to-r from-gray-700 to-gray-900 text-white rounded-xl p-5">
               <h2 className="text-2xl font-bold mb-2">설정</h2>
               <p className="opacity-90">앱 설정 및 계정 관리</p>
@@ -459,75 +292,19 @@ const SmartFarmApp = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-xl shadow-lg p-5">
-              <h3 className="font-bold text-lg mb-4">알림 설정</h3>
-              <div className="space-y-4">
-                {[
-                  { key: 'emergency', label: '긴급 알림', desc: '폭염, 가뭄 등 긴급 상황', enabled: true },
-                  { key: 'weather', label: '기상 알림', desc: '일기예보 및 기상 변화', enabled: true },
-                  { key: 'schedule', label: '작업 알림', desc: '농작업 일정 및 권장사항', enabled: true },
-                  { key: 'sensor', label: '센서 알림', desc: '센서 이상 및 임계값 도달', enabled: true }
-                ].map(notification => (
-                  <div key={notification.key} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                    <div>
-                      <div className="font-medium">{notification.label}</div>
-                      <div className="text-sm text-gray-600">{notification.desc}</div>
-                    </div>
-                    <button className={`w-12 h-6 rounded-full ${notification.enabled ? 'bg-green-500' : 'bg-gray-300'}`}>
-                      <div className={`w-5 h-5 bg-white rounded-full transition-transform ${notification.enabled ? 'translate-x-6' : 'translate-x-0.5'}`}></div>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="bg-white rounded-xl shadow-lg p-5">
-              <h3 className="font-bold text-lg mb-4">시스템</h3>
-              <div className="space-y-3">
-                <button className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Database className="w-5 h-5 text-gray-600" />
-                    <span>데이터 백업</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </button>
-                <button className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <HelpCircle className="w-5 h-5 text-gray-600" />
-                    <span>도움말</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </button>
-                <button className="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-                  <div className="flex items-center gap-3">
-                    <Phone className="w-5 h-5 text-gray-600" />
-                    <span>고객센터</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </button>
-              </div>
-            </div>
           </div>
         )}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
         <div className="flex justify-around">
-// ===== Part 4 끝, Part 5에서 계속 =====
-<button onClick={() => setCurrentScreen('home')} className={`flex flex-col items-center p-2 ${currentScreen === 'home' ? 'text-green-600' : 'text-gray-400'}`}>
+          <button onClick={() => setCurrentScreen('home')} className={`flex flex-col items-center p-2 ${currentScreen === 'home' ? 'text-green-600' : 'text-gray-400'}`}>
             <Home className="w-6 h-6" />
             <span className="text-xs mt-1">홈</span>
           </button>
           <button onClick={() => setCurrentScreen('calendar')} className={`flex flex-col items-center p-2 ${currentScreen === 'calendar' ? 'text-green-600' : 'text-gray-400'}`}>
             <Calendar className="w-6 h-6" />
             <span className="text-xs mt-1">절기달력</span>
-          </button>
-          <button onClick={() => setCurrentScreen('management')} className={`flex flex-col items-center p-2 ${currentScreen === 'management' ? 'text-green-600' : 'text-gray-400'}`}>
-            <BarChart3 className="w-6 h-6" />
-            <span className="text-xs mt-1">관리</span>
-          </button>
-          <button onClick={() => setCurrentScreen('community')} className={`flex flex-col items-center p-2 ${currentScreen === 'community' ? 'text-green-600' : 'text-gray-400'}`}>
-            <Users className="w-6 h-6" />
-            <span className="text-xs mt-1">커뮤니티</span>
           </button>
           <button onClick={() => setCurrentScreen('settings')} className={`flex flex-col items-center p-2 ${currentScreen === 'settings' ? 'text-green-600' : 'text-gray-400'}`}>
             <Settings className="w-6 h-6" />
